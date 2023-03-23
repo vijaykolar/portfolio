@@ -1,0 +1,169 @@
+import { ArticleLayout } from '@/components/ArticleLayout'
+import Image from "next/image";
+import semanticTags from '../../images/blog/what-are-semantic-tags/semantic-tags-pic.png'
+import semanticHTML from '../../images/blog/what-are-semantic-tags/semantic-html.png'
+import nestedHeading from '../../images/blog/what-are-semantic-tags/nested-heading.png'
+import visualLayout from '../../images/blog/what-are-semantic-tags/visual-layout.png'
+
+export const meta = {
+  author: 'Vijay Kolar',
+  date: '2022-09-02',
+  title: 'What Is Semantic HTML?',
+  description:
+    'Semantic HTML, also known as semantic markup, refers to the use of HTML tags that convey the meaning—or semantics—of the content contained within them.',
+}
+
+export default (props) => <ArticleLayout meta={meta} {...props} />
+
+Semantic HTML, also known as semantic markup, refers to the use of HTML tags that convey the meaning—or semantics—of the content contained within them.
+
+By adding semantic HTML tags to your pages, you provide additional information that helps define the roles and relative importance of the different parts of your page. (As opposed to non-semantic HTML, which uses tags that don’t directly convey meaning.)
+
+<Image className="h-1/2 w-1/2 aspect-auto border border-gray-300 p-5" src={semanticTags} alt="semantic tags" />
+
+<strong>Note:</strong> HTML is a language that is used to structure a website. This guide assumes a basic understanding of HTML. If you’re a total beginner, looking at an [HTML introduction guide](https://www.w3schools.com/html/html_intro.asp) will be helpful
+
+Semantic HTML tags are tags that define the meaning of the content they contain.
+
+For example, tags like <strong>header</strong>, <strong>article</strong>, and <strong>footer</strong> are semantic HTML tags. They clearly indicate the role of the content they contain.
+
+On the other hand, tags like <strong>div</strong>, and <strong>span</strong> are typical examples of non-semantic HTML elements. They serve only as content holders but give no indication as to what type of content they contain or what role that content plays on the page
+
+## Why Do I Need to Use Semantic HTML Tags?
+Besides the obvious reason that semantic HTML tags are easier to read and understand—for example, by web developers reviewing the code—there are two more specific reasons why you should always use semantic tags
+
+
+
+## Accessibility
+
+For sighted users, it’s easy to identify the various parts of a webpage. Headers, footers, and the main content are all immediately visually apparent.
+
+However, it is not that easy for users who are <strong>blind or visually impaired</strong> and rely on screen readers.
+
+The proper use of HTML semantic tags will allow these readers to understand your content better because their screen readers will communicate your content more accurately.
+
+
+## SEO
+
+Semantic HTML tags are important for [SEO](https://www.semrush.com/blog/what-is-seo/) (search engine optimization) because they indicate the role of the content within the tags.
+
+That information gives [search engine crawlers](https://www.semrush.com/blog/site-crawler/), like Googlebot, a better understanding of your content. This increases the chances that your content will be selected as a candidate for ranking on the search engine results page (SERP) for relevant keywords.
+
+To put it simply, pages with correctly implemented semantic HTML have an advantage in SEO over those that don’t.
+
+## Types of HTML Semantic Tags
+
+Semantic tags can define different parts of a webpage.
+
+Let's take a look at the most common semantic HTML elements, divided into two categories based on their usage:
+
+1. <a href="#d">HTML semantic tags for structure</a>
+2. <a href="#x">HTML semantic tags for text</a>
+
+<h2 id="d">HTML Semantic Tags for Structure</h2>
+
+Many semantic HTML tags communicate the layout of a page.
+
+These “structural” tags were introduced when HTML4 got upgraded to HTML5. That's why they're also commonly known as semantic HTML5 tags or semantic HTML5 elements.
+
+<Image className="h-80 w-1/2 aspect-auto border border-gray-300 p-5 mx-auto" src={semanticHTML} alt="semantic HTML" />
+
+Here’s a full list:
+
+* <strong>header</strong>: The header tag defines content that should be considered the introductory information of a page or section
+* <strong>nav</strong>: The navigation tag is used for navigation links. It can be nested within the <strong>header</strong> tag, but secondary navigation <strong>nav</strong> tags are also commonly used elsewhere on the page.
+* <strong>main</strong>: This tag contains the main content (also called the body) of a page. There should be only one tag per page.
+* <strong>article</strong>: The article tag defines content that could stand independently of the page or site it’s on. It does not necessarily mean a “blog post.” Think of it more as “an article of clothing”—a self-contained item that can be used in various contexts.
+* <strong>section</strong>: Using  is a way of grouping nearby content of a similar theme. A section tag differs from an article tag. It isn’t necessarily self-contained, but it forms part of something else.
+* <strong>aside</strong>: An aside element defines content that’s less important. It’s often used for sidebars—areas that add complementary but nonessential information.
+* <strong>footer</strong>: You use  at the bottom of a page. It usually includes contact information, copyright information, and some site navigation
+
+<h2 id="x">HTML Semantic Tags for Text</h2>
+
+The semantic HTML tags for text are HTML tags that—besides the formatting—also convey the semantic function of the text they contain.
+
+Here are some of the most common examples:
+
++ <strong>h1</strong> (heading): The H1 tag marks the top level heading. There’s usually only one H1 heading per page.
++ <strong>h2</strong> to <strong>h6</strong>  (subheadings): The subheadings of various levels of importance. There can be multiple headings of the same level on a single page.
++ <strong>p</strong> (paragraph): A standalone paragraph of text.
++ <strong>a</strong> (anchor): Used to mark up a hyperlink from one page to another.
++ <strong>ol</strong> (ordered list): A list of items that are displayed in a particular order, starting with bullet points. One <strong>li</strong> (list item) tag contains a single item in the list.
++ <strong>ul</strong> (unordered list): A list of items that do not need to be displayed in a particular order, starting with ordinal numbers. One <strong>li</strong>(list item) tag contains a single item of the list.
++ <strong>q</strong> / <strong>blockquote</strong>: A quotation of the text. Use <strong>blockquote</strong> for long, multi-line quotations and <strong>q</strong> for shorter, inline quotations.
++ <strong>em</strong> (emphasis): Used for text that should be emphasized.
++ <strong>strong</strong> (strong emphasis): Used for text that should be strongly emphasized.
++ <strong>code</strong>: A block of computer code.
+
+
+<b>Note</b>: We’ve only listed some of the most common semantic HTML tags. You can use many others—like <strong>summary</strong>, <strong>time</strong>, <strong>address</strong>, <strong>video</strong> etc.—to make the content of your website easier to understand. To discover more HTML semantic elements, check out the [list of all HTML tags](https://www.w3schools.com/TAGS/default.asp) by W3Schools
+
+## Semantic HTML Tips & Best Practices
+
+Finally, let’s cover some HTML implementation tips based on common mistakes people make when using semantic HTML tags.
+
+
+## Don't Use Semantic HTML Tags for Styling
+
+Although web browsers apply styling to many semantic tags (e.g., the text within an <strong>a</strong> tag is usually blue and underlined), it doesn’t mean HTML tags are supposed to be used to style your text.
+
+In other words, just as you wouldn’t use an <strong>a</strong> tag for a “non-link” text just to make it blue and underlined, you should not use other semantic tags for purely stylistic purposes.
+
+Here are some typical examples of using semantic tags incorrectly:
+
+- Using an <strong>h1</strong> to <strong>h6</strong> tag for text that is not a heading with the purpose of changing its font size
+- Using <strong>blockquote</strong> just to indent text that is not a quotation
+- Using <strong>strong</strong> or <strong>em</strong> just to add bold or italics to text that doesn't need emphasis.
+
+For styling purposes, always use CSS.
+
+## Nest the Heading Tags with Semantics in Mind
+
+Always order header elements by importance.
+
+For example, all the H3 headings that follow a certain H2 heading should be subtopics of that H2.
+
+<Image className="h-1/2 w-1/2 aspect-auto border border-gray-300 p-5" src={nestedHeading} alt="Nested heading tags" />
+
+This way, the structure of headings creates a logical hierarchy of the topics within your piece of content and helps both readers and search engines better understand and navigate the text.
+
+The same advice—nesting tags by their meaning—applies to all the other semantic HTML tags.
+
+Which brings us to the next piece of advice:
+
+## Don’t Just Copy Your Visual Layout
+
+Your HTML implementation shouldn’t be a mere duplicate of the visual layout. Instead, it should follow the semantic structure of the page.
+
+Let’s take a look at this example:
+
+<div className="border border-gray-300 p-5 dark:border-red-300">
+  <Image className="h-1/2 w-1/2 aspect-auto " src={visualLayout} alt="Visual Layout" />
+</div>
+
+The usage of HTML tags on the left side is incorrect because it indicates that the page contains four different topics, rather than one topic and three subtopics, as shown on the right.
+
+On the right-hand side, we have a properly constructed page using semantic HTML. Although there are four separate sections in the visual layout of the page, the HTML tags are nested according to the semantics of the content.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

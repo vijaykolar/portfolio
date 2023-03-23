@@ -1,0 +1,99 @@
+import { ArticleLayout } from '@/components/ArticleLayout'
+import Image from 'next/image'
+import computer from '../../../images/blog/front-end-web-development-best-practices/computer.jpg'
+import folderStructure from '../../../images/blog/front-end-web-development-best-practices/code_1.webp'
+
+export const meta = {
+  author: 'Vijay Kolar',
+  date: '2023-03-21',
+  title: 'Front-End Web Development Best Practices From My Experience in the Industry',
+  description:
+    'If you’re not following these already, consider starting right away',
+}
+
+export default (props) => <ArticleLayout meta={meta} {...props} />
+
+A few months ago, I started working on a one-year web application development project, and I realized how many developers are not quite aware of the best industrial practices in the front-end development of web apps. Even I was not aware of some practices as well. So I decided to write this article to share what I know and what I have learned about the best practices to follow when developing a web application.
+
+<Image src={computer} alt="Computer" />
+
+This article will focus on best practices in front-end development because the quality of the front-end code is the most deciding factor of a great web app in my experience, but most developers fail to follow these practices and develop their individual components. If front-end developers do not follow these practices, it will be really difficult to manage the code, there will be no consistency across the design, and the web app’s speed will also have a negative impact. Following these practices will make the code clean and easy to manage, and will increase the productivity of all the developers.
+
+In this article, I am going to talk about best practices to follow when structuring the project’s front-end architecture, writing front-end code, and preparing for deployment. So let’s get started.
+
+## Best Practices When Structuring the Front-End
+
+When you get started on the project, the first thing is to structure the front-end code architecture properly. And these are the best practices that each front-end developer of the project needs to follow.
+
+## Structuring the style code
+
+Inside the styles' folder, create separate folders for configurations, base, layout, components, and pages depending on your web application. Use a separate typography file to define sizes and colors for all the HTML text tags(such as h1,h2,…) used in the web app. Colors should be defined in a variables file and assign colors to variables with suitable names and use those variables when colors need to be applied throughout the website. Include these style files inside the folders created similar to the below image.
+
+<div style={{textAlign: 'center'}}>
+  <Image style={{margin: "0 auto"} }src={folderStructure} alt="Folder structure" />
+  <span > screenshot of style file structure </span>
+</div>
+
+You can then import these files into the main style file. If you are using scss in your web app then main.scss file would be similar to the below code.
+
+
+```c
+// 1. Configuration
+@import 'abstracts/variables';
+@import 'abstracts/mixins';
+
+// 2. Base stuff
+@import 'base/base';
+@import 'base/fonts';
+@import 'base/typography';
+
+// 3. Layout-related sections
+@import 'layout/header';
+@import 'layout/banner';
+@import 'layout/grey-background';
+@import 'layout/footer';
+
+// 4. Components
+@import 'components/button';
+@import 'components/card';
+@import 'components/navs';
+@import 'components/form';
+
+// 5. Page-specific styles
+@import 'pages/home';
+@import 'pages/my-page-1';
+@import 'pages/my-page-2';
+```
+
+
+## Best Practices When Writing Front-End Code
+
+### Use a CSS Preprocessor
+Don’t write pure CSS code in your web application, yah! not even for some of your components. Always use a preprocessor like SCSS or Sass and stick to the main style structure that was mentioned above.
+
+### Don’t keep empty SRC or HREF
+In some browsers, empty src or href attributes will trigger unnecessary server requests that will waste bandwidth and server resources. So it is best to avoid using them in our code.
+
+### Avoid using CSS expressions
+CSS expressions such as the calc() function are frequently evaluated, which can degrade the performance of the page. Instead, use attributes like box-sizing if needed.
+
+### Use a custom parent class for your custom styles
+Always use a custom parent class if you are writing custom styles for your page or component. This makes sure that you don’t accidentally override the styles of somebody else. Don’t use too many nested classes in the style code either, using one parent class would work and will be easy to manage. Over specifying the styles by using too many classes will also increase the size of the file.
+
+### Only use globally created responsive typography styles
+Define responsive text tags in global typography and always use those defined tags in your HTML code. For individual components and pages, do not write custom font sizes. Developers should keep the consistency of the web app.
+
+### Avoid using global JavaScript variables
+Avoid using global variables as much as possible in your JS code because using them can cause conflicts. Declare local scope variables of your own when you need them.
+
+### Add meaningful comments to describe your code
+Adding comments to the code is a very important quality, but most developers are lazy to do it. It will help other developers understand what you have done by adding a meaningful comment to your code piece, especially if you are writing reusable plugins or components.
+
+
+## Final thoughts
+
+You will need to follow these practices when you work on an industrial project. These practices will help to make the web application development process faster and also will increase the quality of the application. There would be fewer conflicts among developers and a high level of consistency across the application.
+
+That’s all for this article. Hope you learned something new.
+
+Thank you for reading, and happy coding👨‍💻
