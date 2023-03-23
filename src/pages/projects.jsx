@@ -8,6 +8,11 @@ import logoCosmos from '@/images/logos/cosmos.svg'
 import logoHelioStream from '@/images/logos/helio-stream.svg'
 import logoOpenShuttle from '@/images/logos/open-shuttle.svg'
 import logoPlanetaria from '@/images/logos/planetaria.svg'
+import lollypopLogo from '@/images/logos/lollypo-logo.png'
+import digitLogo from '@/images/logos/go-digit.png'
+import valtechLogo from '@/images/logos/valtech.png'
+import githubLogo from '@/images/logos/github.png'
+
 
 const projects = [
   {
@@ -15,14 +20,14 @@ const projects = [
     description:
       'High performance web animation library, hand-written in optimized WASM.',
     link: { href: 'https://lollypop.design/', label: 'lollypop.design' },
-    logo: logoAnimaginary,
+    logo: lollypopLogo,
   },
   {
     name: 'Go Digit Insurance',
     description:
       'Creating technology to empower civilians to explore space on their own terms.',
     link: { href: 'https://www.godigit.com/', label: 'godigit.com' },
-    logo: logoPlanetaria,
+    logo: digitLogo,
   },
 
   {
@@ -30,21 +35,21 @@ const projects = [
     description:
       'Real-time video streaming library, optimized for interstellar transmission.',
     link: { href: 'https://www.expo2020dubai.com/', label: 'Expo 2020 Dubai' },
-    logo: logoHelioStream,
+    logo: valtechLogo,
   },
   {
     name: 'Villas on Rent',
     description:
       'The operating system that powers our Planetaria space shuttles.',
     link: { href: 'https://villasonrent.com/', label: 'villasonrent.com' },
-    logo: logoCosmos,
+    logo: lollypopLogo,
   },
   {
     name: 'PS Group',
     description:
       'The schematics for the first rocket I designed that successfully made it to orbit.',
     link: { href: 'https://psgroup.in/', label: 'psgroup.in' },
-    logo: logoOpenShuttle,
+    logo: lollypopLogo,
   },
   {
     name: 'Moople',
@@ -61,26 +66,26 @@ const openSourceProjects = [
     description:
       'The schematics for the first rocket I designed that successfully made it to orbit.',
     link: { href: 'https://nextjs-tailwind-sdmcet.vercel.app', label: 'sdmcet.com' },
-    logo: logoOpenShuttle,
+    logo: githubLogo,
   },
   {
     name: 'Material Dashboard',
     description:
       'The schematics for the first rocket I designed that successfully made it to orbit.',
     link: { href: 'https://react-material-dashboard-vijaykolar.vercel.app/', label: 'material-dashboard.com' },
-    logo: logoOpenShuttle,
+    logo: githubLogo,
   }, {
     name: 'Garden React App',
     description:
       'The schematics for the first rocket I designed that successfully made it to orbit.',
     link: { href: 'https://garden-team.netlify.app/', label: 'garden-team.com' },
-    logo: logoOpenShuttle,
+    logo: githubLogo,
   },{
     name: 'Vue App',
     description:
       'The schematics for the first rocket I designed that successfully made it to orbit.',
     link: { href: 'https://github.com/vijaykolar/Vueapp', label: 'vue-app.com' },
-    logo: logoOpenShuttle,
+    logo: githubLogo,
   },
 
 
@@ -121,7 +126,7 @@ export default function Projects() {
                 <Image
                   src={project.logo}
                   alt=""
-                  className="h-8 w-8"
+                  className="h-8 w-8 object-contain"
                   unoptimized
                 />
               </div>
@@ -154,7 +159,7 @@ export default function Projects() {
                 <Image
                   src={project.logo}
                   alt=""
-                  className="h-8 w-8"
+                  className="h-8 w-8 object-contain"
                   unoptimized
                 />
               </div>

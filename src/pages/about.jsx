@@ -67,30 +67,16 @@ export default function About() {
             </h1>
             <div className="mt-6 space-y-7 text-base text-zinc-600 dark:text-zinc-400">
               <p>
-                I’ve loved making things for as long as I can remember, and
-                wrote my first program when I was 6 years old, just two weeks
-                after my mom brought home the brand new Macintosh LC 550 that I
-                taught myself to type on.
+               I am skilled web developer living in Bengaluru City, India. I specialize in developing websites using React Node, and known for my clean, efficient coding practices. In addition to my work as a web developer, I am passionate about blog writing, and regularly shares my insights and expertise on various topics related to web development and coding.
               </p>
               <p>
-                The only thing I loved more than computers as a kid was space.
-                When I was 8, I climbed the 40-foot oak tree at the back of our
-                yard while wearing my older sister’s motorcycle helmet, counted
-                down from three, and jumped — hoping the tree was tall enough
-                that with just a bit of momentum I’d be able to get to orbit.
+                When I am not busy in coding or writing, I enjoy spending time with family. I place a high value on relationships with my loved ones, and makes sure to carve out time in my busy schedule to connect with them.
               </p>
               <p>
-                I spent the next few summers indoors working on a rocket design,
-                while I recovered from the multiple surgeries it took to fix my
-                badly broken legs. It took nine iterations, but when I was 15 I
-                sent my dad’s Blackberry into orbit and was able to transmit a
-                photo back down to our family computer from space.
+                One of my greatest passions is travel. I love exploring new places and experiencing different cultures, and traveled to a number of destinations around the Karnataka, India. Whether I am exploring the bustling streets of a big city or hiking through a scenic mountain range, I am always eager to immerse myself in new experiences and learn as much as i can about the world around me.
               </p>
               <p>
-                Today, I’m the founder of Planetaria, where we’re working on
-                civilian space suits and manned shuttle kits you can assemble at
-                home so that the next generation of kids really <em>can</em>{' '}
-                make it to orbit — from the comfort of their own backyards.
+                Despite my busy schedule and varied interests, I am a committed family man who always makes time for my loved ones. I am happily married and takes great joy in spending time with my spouse whenever i can.
               </p>
             </div>
           </div>
