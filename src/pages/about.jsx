@@ -42,10 +42,10 @@ export default function About() {
   return (
     <>
       <Head>
-        <title>About - Spencer Sharp</title>
+        <title>About - Vijay Kolar</title>
         <meta
           name="description"
-          content="I’m Spencer Sharp. I live in New York City, where I design the future."
+          content="I’m Vijay Kolar. I live in Bengaluru, where I develop the future."
         />
       </Head>
       <Container className="mt-16 sm:mt-32">
@@ -62,7 +62,7 @@ export default function About() {
           </div>
           <div className="lg:order-first lg:row-span-2">
             <h1 className="text-4xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 sm:text-5xl">
-              I’m Kolar Vijay. I live in New York City, where I design the
+              I’m Kolar Vijay. I live in Bengaluru City, where I develop the
               future.
             </h1>
             <div className="mt-6 space-y-7 text-base text-zinc-600 dark:text-zinc-400">
@@ -106,11 +106,11 @@ export default function About() {
                 Connect on LinkedIn
               </SocialLink>
               <SocialLink
-                href="mailto:vijayikolar.com"
+                href="mailto:vijayikolar@gmail.com"
                 icon={MailIcon}
                 className="mt-8 border-t border-zinc-100 pt-8 dark:border-zinc-700/40"
               >
-                vijayikolar.com
+                vijayikolar@gmail.com
               </SocialLink>
             </ul>
           </div>
