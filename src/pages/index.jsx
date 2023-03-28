@@ -161,7 +161,7 @@ function Resume() {
     },
     {
       company: 'Lollypop UX/UI Design Studio',
-      title: 'Shift Supervisor',
+      title: 'Frond End Supervisor',
       logo: lollypop,
       start: '2016',
       end: '2018',
