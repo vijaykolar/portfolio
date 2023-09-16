@@ -1,38 +1,14 @@
-# Portfolio
+# Portfolio Built with Next.js, Tailwind CSS, and MDX
 
-CV is built using [Tailwind CSS](https://tailwindcss.com) and [Next.js](https://nextjs.org).
 
-## Getting started
+This portfolio is a web application created using the Next.js framework, styled with Tailwind CSS, and powered by MDX for a robust blogging platform. It provides a dynamic and responsive platform for showcasing your work and sharing engaging blog content. Below are key features and instructions for setting up and customizing your portfolio:
 
-To get started with this template, first install the npm dependencies:
+## Key Features
 
-```bash
-npm install
-```
-
-Next, create a `.env.local` file in the root of your project and set the `NEXT_PUBLIC_SITE_URL` variable to your site's public URL:
-
-```
-NEXT_PUBLIC_SITE_URL=https://example.com
-```
-
-Next, run the development server:
-
-```bash
-npm run dev
-```
-
-Finally, open [http://localhost:3000](http://localhost:3000) in your browser to view the website.
-
-## Customizing
-
-You can start editing this template by modifying the files in the `/src` folder. The site will auto-update as you edit these files.
-
-## Learn more
-
-To learn more about the technologies used in this site template, see the following resources:
-
-- [Tailwind CSS](https://tailwindcss.com/docs) - the official Tailwind CSS documentation
-- [Next.js](https://nextjs.org/docs) - the official Next.js documentation
-- [Headless UI](https://headlessui.dev) - the official Headless UI documentation
-- [MDX](https://mdxjs.com) - the MDX documentation
+* Next.js: Leverage the power of server-side rendering for fast page loads and seamless navigation.
+* Tailwind CSS: Easily customize and style your portfolio with the utility-first CSS framework.
+* MDX: Write your blog posts in Markdown with added components and interactivity, making content creation a breeze.
+* Responsive Design: Ensure your portfolio looks great on various devices and screen sizes.
+* Dynamic Routing: Easily add and organize your projects and blog posts.
+* SEO Optimization: Optimize your site for search engines with Next.js's built-in SEO features.
+* Customization: Tailor the portfolio to your unique style and preferences.
