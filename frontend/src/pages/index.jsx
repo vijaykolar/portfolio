@@ -5,19 +5,13 @@ import Link from 'next/link'
 import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
 import { Container } from '@/components/Container'
-import {
-  GitHubIcon,
-  LinkedInIcon,
-  TwitterIcon,
-} from '@/components/SocialIcons'
-import logoAirbnb from '@/images/logos/airbnb.svg'
-import logoFacebook from '@/images/logos/facebook.svg'
-import logoPlanetaria from '@/images/logos/planetaria.svg'
-import logoStarbucks from '@/images/logos/starbucks.svg'
+import { GitHubIcon, LinkedInIcon, TwitterIcon } from '@/components/SocialIcons'
+
 import hcllogo from '@/images/logos/hcl-logo.png'
 import godigit from '@/images/logos/go-digit.png'
 import valtech from '@/images/logos/valtech.png'
 import lollypop from '@/images/logos/lollypo-logo.png'
+import harman from '@/images/logos/harman_International_logo.svg.png'
 import { formatDate } from '@/lib/formatDate'
 import { generateRssFeed } from '@/lib/generateRssFeed'
 import { getAllArticles } from '@/lib/getAllArticles'
@@ -136,18 +130,25 @@ function Newsletter() {
 function Resume() {
   let resume = [
     {
-      company: 'HCL Technologies Ltd',
-      title: 'React.js Deeveloper',
-      logo: hcllogo,
-      start: '2021',
+      company: 'Harman',
+      title: 'Technical Lead',
+      logo: harman,
+      start: '2023',
       end: {
         label: 'Present',
         dateTime: new Date().getFullYear(),
       },
     },
     {
+      company: 'HCL Technologies Ltd',
+      title: 'React.js Developer',
+      logo: hcllogo,
+      start: '2021',
+      end: '2023',
+    },
+    {
       company: 'Go Digit Insurance',
-      title: 'Software Developer',
+      title: 'Software Engineer',
       logo: godigit,
       start: '2018',
       end: '2021',
@@ -178,7 +179,12 @@ function Resume() {
         {resume.map((role, roleIndex) => (
           <li key={roleIndex} className="flex gap-4">
             <div className="relative mt-1 flex h-10 w-10 flex-none items-center justify-center rounded-full shadow-md shadow-zinc-800/5 ring-1 ring-zinc-900/5 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0">
-              <Image src={role.logo} alt={role.title} className="h-7 w-7 object-contain" unoptimized />
+              <Image
+                src={role.logo}
+                alt={role.title}
+                className="h-7 w-7 object-contain"
+                unoptimized
+              />
             </div>
             <dl className="flex flex-auto flex-wrap gap-x-2">
               <dt className="sr-only">Company</dt>
@@ -208,10 +214,10 @@ function Resume() {
           </li>
         ))}
       </ol>
-      {/*<Button onClick={onButtonClick} download variant="secondary" className="group mt-6 w-full">*/}
-      {/*  Download CV*/}
-      {/*  <ArrowDownIcon className="h-4 w-4 stroke-zinc-400 transition group-active:stroke-zinc-600 dark:group-hover:stroke-zinc-50 dark:group-active:stroke-zinc-50" />*/}
-      {/*</Button>*/}
+      <Button onClick={() => {}} download variant="secondary" className="group mt-6 w-full">
+        Download CV
+       <ArrowDownIcon className="h-4 w-4 stroke-zinc-400 transition group-active:stroke-zinc-600 dark:group-hover:stroke-zinc-50 dark:group-active:stroke-zinc-50" />
+      </Button>
     </div>
   )
 }
@@ -220,9 +226,7 @@ export default function Home({ articles }) {
   return (
     <>
       <Head>
-        <title>
-          Vijay Kolar - Software developer, designer
-        </title>
+        <title>Vijay Kolar - Software developer, designer</title>
         <meta
           name="description"
           content="I’m Vijay, a software developer, designer based in Bengaluru. "
@@ -230,13 +234,15 @@ export default function Home({ articles }) {
       </Head>
       <Container className="mt-9">
         <div className="max-w-2xl">
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 sm:text-5xl">
-            Software developer
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 sm:text-5xl">
+            Technical Lead
           </h1>
-          <p className="mt-6 text-base text-zinc-600 dark:text-zinc-400">
-            I’m Vijay, a software developer and designer based in Bengaluru. I develop
-            technologies that empower regular people to explore space on their
-            own terms.
+          <p className="mt-4 text-base text-zinc-600 dark:text-zinc-400">
+            I’m Vijay, a Technical Lead and UI Designer based in Bengaluru. I
+            specialize in developing innovative technologies that make space
+            exploration more accessible. By combining technical expertise with
+            user-centered design, I aim to empower individuals to explore space
+            on their own terms, enhancing their experience and engagement.
           </p>
           <div className="mt-6 flex gap-6">
             <SocialLink
