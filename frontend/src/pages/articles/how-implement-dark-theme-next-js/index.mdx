@@ -1,0 +1,148 @@
+import { ArticleLayout } from '@/components/ArticleLayout'
+
+export const meta = {
+  author: 'Vijay Kolar',
+  date: '2025-01-17',
+  title: 'How to Implement Dark Themes in Next.js Using TypeScript',
+  description:
+    'Learn how to implement dark themes in your Next.js application using TypeScript. This guide will walk you through the steps to create a seamless dark mode experience for your users.',
+}
+
+export default (props) => <ArticleLayout meta={meta} {...props} />
+
+# How to Implement Dark Themes in Next.js Using TypeScript
+
+Implementing a dark theme in your Next.js application can greatly enhance the user experience, especially for those who prefer a darker interface. In this guide, we will walk through the steps to add a dark theme to your Next.js project using TypeScript.
+
+## Setting Up the Project
+
+### Creating a New Next.js Project
+
+If you don't have a Next.js project set up with TypeScript, you can create one using the following steps:
+
+```bash
+npx create-next-app@latest my-next-app --typescript
+cd my-next-app
+```
+
+This sets up a new Next.js project with TypeScript.
+
+## Installing Necessary Packages
+
+Install the required packages for styling and theming:
+
+```bash
+npm install tailwindcss @tailwindcss/forms @tailwindcss/typography postcss autoprefixer
+```
+
+## Configuring Tailwind CSS
+
+Run the following command to initialize Tailwind CSS in your project:
+
+```bash
+npx tailwindcss init -p
+```
+
+This creates a tailwind.config.js file where you can customize your Tailwind configuration.
+
+Update the tailwind.config.js file to enable dark mode:
+
+```javaScript
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: 'class', // Enable dark mode support
+  content: ['./pages/**/*.{js,ts,jsx,tsx}', './components/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {},
+  },
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
+  ],
+}
+
+```
+
+Update your globals.css file to include the Tailwind base styles:
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+## Implementing Dark Mode
+
+### Step 1: Create a Theme Toggle Component
+
+Add a ThemeToggle component to your project:
+
+```typescript
+// components/ThemeToggle.tsx
+
+import { useState, useEffect } from 'react'
+
+const ThemeToggle = () => {
+  const [theme, setTheme] = useState('light')
+
+  useEffect(() => {
+    const currentTheme = localStorage.getItem('theme')
+    if (currentTheme) {
+      setTheme(currentTheme)
+    } else {
+      const prefersDarkMode = window.matchMedia(
+        '(prefers-color-scheme: dark)'
+      ).matches
+      setTheme(prefersDarkMode ? 'dark' : 'light')
+    }
+  }, [])
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light'
+    localStorage.setItem('theme', newTheme)
+    setTheme(newTheme)
+    document.documentElement.setAttribute('data-theme', newTheme)
+  }
+
+  return (
+    <button
+      className="rounded-md bg-gray-200 px-4 py-2 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+      onClick={toggleTheme}
+    >
+      {theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+    </button>
+  )
+}
+
+export default ThemeToggle
+```
+
+### Step 2: Integrate the Theme Toggle Component
+
+Add the ThemeToggle component to your layout or pages where you want the dark mode toggle to appear:
+
+```jsx
+// pages/index.tsx
+
+import ThemeToggle from '@/components/ThemeToggle'
+
+export default function Home() {
+  return (
+    <div className="min-h-screen bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+      <header className="p-4">
+        <h1 className="text-xl font-bold">Next.js Dark Mode Example</h1>
+        <ThemeToggle />
+      </header>
+      <main className="p-4">
+        <p>Welcome to the dark mode implementation guide!</p>
+      </main>
+    </div>
+  )
+}
+```
+
+## Conclusion
+
+You’ve successfully implemented dark mode in your Next.js application using TypeScript and Tailwind CSS. The ThemeToggle component allows users to switch between light and dark modes, and the styles are dynamically updated based on the selected theme.
+
+For further customization, explore the Tailwind CSS documentation.
