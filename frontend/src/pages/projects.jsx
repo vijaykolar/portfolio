@@ -13,7 +13,6 @@ import digitLogo from '@/images/logos/go-digit.png'
 import valtechLogo from '@/images/logos/valtech.png'
 import githubLogo from '@/images/logos/github.png'
 
-
 const projects = [
   {
     name: 'Lollypop Design Studio',
@@ -55,40 +54,78 @@ const projects = [
     name: 'Moople',
     description:
       'The schematics for the first rocket I designed that successfully made it to orbit.',
-    link: {href: 'https://moople.in/', label: 'moople.in'},
+    link: { href: 'https://moople.in/', label: 'moople.in' },
     logo: logoOpenShuttle,
-  }
+  },
 ]
 
 const openSourceProjects = [
   {
-    name: 'SDMCET',
+    name: 'Project Management',
     description:
-      'The schematics for the first rocket I designed that successfully made it to orbit.',
-    link: { href: 'https://nextjs-tailwind-sdmcet.vercel.app', label: 'sdmcet.com' },
+      'A project management tool built with Next.js and Tailwind CSS.',
+    link: {
+      href: 'https://project-management-app-theta-sand.vercel.app/',
+      label: 'project-management.app',
+    },
+    logo: githubLogo,
+  },
+  {
+    name: 'Care Pulse',
+    description:
+      'CarePulse is a doctor booking app built using a modern tech stack to ensure a seamless and efficient user experience.',
+    link: {
+      href: 'https://care-pulse-nine-mu.vercel.app/',
+      label: 'care-pulse.app',
+    },
+    logo: githubLogo,
+  },
+  {
+    name: 'Vite games',
+    description:
+      'vite-games repository is an open-source project that utilizes the Vite build tool and Chakra UI library to create a web application for gaming purposes. Vite is a fast and lightweight development tool for building modern web applications, while Chakra UI is a component library.',
+    link: { href: 'https://vite-games.vercel.app', label: 'vite-games.app' },
+    logo: githubLogo,
+  },
+  {
+    name: 'Cab Booking React Native App',
+    description:
+      'Check out this a cab booking app built using React Native, Expo, TypeScript, Neon Database, and Clerk for authentication. Implemented following pages Welcome, Sign Up, Sign In, Recent Rides, Chat, and Profile.',
+    link: {
+      href: 'https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7239654459935449088',
+      label: 'cab-booking.app',
+    },
+    logo: githubLogo,
+  },
+  {
+    name: 'Garden React App',
+    description: 'A collaborative gardening app built with React.',
+    link: {
+      href: 'https://garden-team.netlify.app/',
+      label: 'garden-team.com',
+    },
+    logo: githubLogo,
+  },
+  {
+    name: 'Color Pallette',
+    description:
+      'A tool to generate and share color palettes for design projects.',
+    link: {
+      href: 'https://color-pallete-pi.vercel.app/',
+      label: 'color-pallette.app',
+    },
     logo: githubLogo,
   },
   {
     name: 'Material Dashboard',
     description:
-      'The schematics for the first rocket I designed that successfully made it to orbit.',
-    link: { href: 'https://react-material-dashboard-vijaykolar.vercel.app/', label: 'material-dashboard.com' },
-    logo: githubLogo,
-  }, {
-    name: 'Garden React App',
-    description:
-      'The schematics for the first rocket I designed that successfully made it to orbit.',
-    link: { href: 'https://garden-team.netlify.app/', label: 'garden-team.com' },
-    logo: githubLogo,
-  },{
-    name: 'Vue App',
-    description:
-      'The schematics for the first rocket I designed that successfully made it to orbit.',
-    link: { href: 'https://github.com/vijaykolar/Vueapp', label: 'vue-app.com' },
+      'A React-based dashboard template using Material-UI components.',
+    link: {
+      href: 'https://react-material-dashboard-vijaykolar.vercel.app/',
+      label: 'material-dashboard.com',
+    },
     logo: githubLogo,
   },
-
-
 ]
 
 function LinkIcon(props) {
@@ -106,7 +143,7 @@ export default function Projects() {
   return (
     <>
       <Head>
-        <title>Projects -  Vijay Kolar</title>
+        <title>Projects - Vijay Kolar</title>
         <meta
           name="description"
           content="Things I’ve made trying to put my dent in the universe."
@@ -131,7 +168,9 @@ export default function Projects() {
                 />
               </div>
               <h2 className="mt-6 text-base font-semibold text-zinc-800 dark:text-zinc-100">
-                <Card.Link target="_blank" href={project.link.href}>{project.name}</Card.Link>
+                <Card.Link target="_blank" href={project.link.href}>
+                  {project.name}
+                </Card.Link>
               </h2>
               <Card.Description>{project.description}</Card.Description>
               <p className="relative z-10 mt-6 flex text-sm font-medium text-zinc-400 transition group-hover:text-teal-500 dark:text-zinc-200">
@@ -141,14 +180,8 @@ export default function Projects() {
             </Card>
           ))}
         </ul>
-
-
-
       </SimpleLayout>
-      <SimpleLayout
-        title="Open source"
-        intro=""
-      >
+      <SimpleLayout title="Open source" intro="">
         <ul
           role="list"
           className="grid grid-cols-1 gap-x-12 gap-y-16 sm:grid-cols-2 lg:grid-cols-3"
@@ -164,7 +197,9 @@ export default function Projects() {
                 />
               </div>
               <h2 className="mt-6 text-base font-semibold text-zinc-800 dark:text-zinc-100">
-                <Card.Link target="_blank" href={project.link.href}>{project.name}</Card.Link>
+                <Card.Link target="_blank" href={project.link.href}>
+                  {project.name}
+                </Card.Link>
               </h2>
               <Card.Description>{project.description}</Card.Description>
               <p className="relative z-10 mt-6 flex text-sm font-medium text-zinc-400 transition group-hover:text-teal-500 dark:text-zinc-200">
@@ -175,7 +210,6 @@ export default function Projects() {
           ))}
         </ul>
       </SimpleLayout>
-
     </>
   )
 }
