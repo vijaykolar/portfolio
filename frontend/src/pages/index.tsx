@@ -1,6 +1,8 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
+import type { GetStaticProps, InferGetStaticPropsType } from 'next'
+import type { SVGProps, ComponentType } from 'react'
 
 import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
@@ -15,8 +17,9 @@ import harman from '@/images/logos/harman_International_logo.svg.png'
 import { formatDate } from '@/lib/formatDate'
 import { generateRssFeed } from '@/lib/generateRssFeed'
 import { getAllArticles } from '@/lib/getAllArticles'
+import type { StaticImageData } from 'next/image'
 
-function MailIcon(props) {
+function MailIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -39,7 +42,7 @@ function MailIcon(props) {
   )
 }
 
-function BriefcaseIcon(props) {
+function BriefcaseIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -62,7 +65,7 @@ function BriefcaseIcon(props) {
   )
 }
 
-function ArrowDownIcon(props) {
+function ArrowDownIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
       <path
@@ -75,7 +78,14 @@ function ArrowDownIcon(props) {
   )
 }
 
-function Article({ article }) {
+interface ArticleType {
+  slug: string
+  title: string
+  date: string
+  description: string
+}
+
+function Article({ article }: { article: ArticleType }) {
   return (
     <Card as="article">
       <Card.Title href={`/articles/${article.slug}`}>
@@ -90,7 +100,14 @@ function Article({ article }) {
   )
 }
 
-function SocialLink({ icon: Icon, ...props }) {
+interface SocialLinkProps {
+  icon: ComponentType<SVGProps<SVGSVGElement>>
+  href: string
+  'aria-label': string
+  target?: string
+}
+
+function SocialLink({ icon: Icon, ...props }: SocialLinkProps) {
   return (
     <Link className="group -m-1 p-1" {...props}>
       <Icon className="h-6 w-6 fill-zinc-500 transition group-hover:fill-zinc-600 dark:fill-zinc-400 dark:group-hover:fill-zinc-300" />
@@ -127,8 +144,16 @@ function Newsletter() {
   )
 }
 
+interface Role {
+  company: string
+  title: string
+  logo: StaticImageData
+  start: string | { label: string; dateTime: number }
+  end: string | { label: string; dateTime: number }
+}
+
 function Resume() {
-  let resume = [
+  const resume: Role[] = [
     {
       company: 'Harman',
       title: 'Technical Lead',
@@ -176,60 +201,65 @@ function Resume() {
         <span className="ml-3">Work</span>
       </h2>
       <ol className="mt-6 space-y-4">
-        {resume.map((role, roleIndex) => (
-          <li key={roleIndex} className="flex gap-4">
-            <div className="relative mt-1 flex h-10 w-10 flex-none items-center justify-center rounded-full shadow-md shadow-zinc-800/5 ring-1 ring-zinc-900/5 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0">
-              <Image
-                src={role.logo}
-                alt={role.title}
-                className="h-7 w-7 object-contain"
-                unoptimized
-              />
-            </div>
-            <dl className="flex flex-auto flex-wrap gap-x-2">
-              <dt className="sr-only">Company</dt>
-              <dd className="w-full flex-none text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                {role.company}
-              </dd>
-              <dt className="sr-only">Role</dt>
-              <dd className="text-xs text-zinc-500 dark:text-zinc-400">
-                {role.title}
-              </dd>
-              <dt className="sr-only">Date</dt>
-              <dd
-                className="ml-auto text-xs text-zinc-400 dark:text-zinc-500"
-                aria-label={`${role.start.label ?? role.start} until ${
-                  role.end.label ?? role.end
-                }`}
-              >
-                <time dateTime={role.start.dateTime ?? role.start}>
-                  {role.start.label ?? role.start}
-                </time>{' '}
-                <span aria-hidden="true">—</span>{' '}
-                <time dateTime={role.end.dateTime ?? role.end}>
-                  {role.end.label ?? role.end}
-                </time>
-              </dd>
-            </dl>
-          </li>
-        ))}
+        {resume.map((role, roleIndex) => {
+          const startLabel = typeof role.start === 'string' ? role.start : role.start.label
+          const startDateTime = typeof role.start === 'string' ? role.start : role.start.dateTime
+          const endLabel = typeof role.end === 'string' ? role.end : role.end.label
+          const endDateTime = typeof role.end === 'string' ? role.end : role.end.dateTime
+
+          return (
+            <li key={roleIndex} className="flex gap-4">
+              <div className="relative mt-1 flex h-10 w-10 flex-none items-center justify-center rounded-full shadow-md shadow-zinc-800/5 ring-1 ring-zinc-900/5 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0">
+                <Image
+                  src={role.logo}
+                  alt={role.title}
+                  className="h-7 w-7 object-contain"
+                  unoptimized
+                />
+              </div>
+              <dl className="flex flex-auto flex-wrap gap-x-2">
+                <dt className="sr-only">Company</dt>
+                <dd className="w-full flex-none text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  {role.company}
+                </dd>
+                <dt className="sr-only">Role</dt>
+                <dd className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {role.title}
+                </dd>
+                <dt className="sr-only">Date</dt>
+                <dd
+                  className="ml-auto text-xs text-zinc-400 dark:text-zinc-500"
+                  aria-label={`${startLabel} until ${endLabel}`}
+                >
+                  <time dateTime={String(startDateTime)}>
+                    {startLabel}
+                  </time>{' '}
+                  <span aria-hidden="true">—</span>{' '}
+                  <time dateTime={String(endDateTime)}>
+                    {endLabel}
+                  </time>
+                </dd>
+              </dl>
+            </li>
+          )
+        })}
       </ol>
-      <Button onClick={() => {}} download variant="secondary" className="group mt-6 w-full">
+      <Button onClick={() => {}} variant="secondary" className="group mt-6 w-full">
         Download CV
-       <ArrowDownIcon className="h-4 w-4 stroke-zinc-400 transition group-active:stroke-zinc-600 dark:group-hover:stroke-zinc-50 dark:group-active:stroke-zinc-50" />
+        <ArrowDownIcon className="h-4 w-4 stroke-zinc-400 transition group-active:stroke-zinc-600 dark:group-hover:stroke-zinc-50 dark:group-active:stroke-zinc-50" />
       </Button>
     </div>
   )
 }
 
-export default function Home({ articles }) {
+export default function Home({ articles }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
     <>
       <Head>
         <title>Vijay Kolar - Software developer, designer</title>
         <meta
           name="description"
-          content="I’m Vijay, a software developer, designer based in Bengaluru. "
+          content="I'm Vijay, a software developer, designer based in Bengaluru. "
         />
       </Head>
       <Container className="mt-9">
@@ -238,7 +268,7 @@ export default function Home({ articles }) {
             Technical Lead
           </h1>
           <p className="mt-4 text-base text-zinc-600 dark:text-zinc-400">
-            I’m Vijay, a Technical Lead and UI Designer based in Bengaluru. I
+            I'm Vijay, a Technical Lead and UI Designer based in Bengaluru. I
             specialize in developing innovative technologies that make space
             exploration more accessible. By combining technical expertise with
             user-centered design, I aim to empower individuals to explore space
@@ -284,8 +314,10 @@ export default function Home({ articles }) {
   )
 }
 
-export async function getStaticProps() {
-  if (process.env.NODE_ENV === 'Production') {
+export const getStaticProps: GetStaticProps<{
+  articles: ArticleType[]
+}> = async () => {
+  if (process.env.NODE_ENV === 'production') {
     await generateRssFeed()
   }
 
