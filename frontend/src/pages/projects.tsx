@@ -2,6 +2,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import type { SVGProps } from 'react'
 import type { StaticImageData } from 'next/image'
+import type { GetStaticProps } from 'next'
 
 import { Card } from '@/components/Card'
 import { SimpleLayout } from '@/components/SimpleLayout'
@@ -10,15 +11,17 @@ import lollypopLogo from '@/images/logos/lollypo-logo.png'
 import digitLogo from '@/images/logos/go-digit.png'
 import valtechLogo from '@/images/logos/valtech.png'
 import githubLogo from '@/images/logos/github.png'
+import { getProjects, getStrapiMediaUrl } from '@/lib/strapi'
 
 interface Project {
   name: string
   description: string
   link: { href: string; label: string }
-  logo: StaticImageData
+  logo: StaticImageData | string
 }
 
-const projects: Project[] = [
+// Fallback projects data
+const fallbackProjects: Project[] = [
   {
     name: 'Lollypop Design Studio',
     description:
@@ -33,7 +36,6 @@ const projects: Project[] = [
     link: { href: 'https://www.godigit.com/', label: 'godigit.com' },
     logo: digitLogo,
   },
-
   {
     name: 'Expo 2020 Dubai',
     description:
@@ -64,7 +66,7 @@ const projects: Project[] = [
   },
 ]
 
-const openSourceProjects: Project[] = [
+const fallbackOpenSourceProjects: Project[] = [
   {
     name: 'Project Management',
     description:
@@ -144,7 +146,15 @@ function LinkIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
-export default function Projects() {
+interface ProjectsProps {
+  projects?: Project[]
+  openSourceProjects?: Project[]
+}
+
+export default function Projects({ projects, openSourceProjects }: ProjectsProps) {
+  const displayProjects = projects && projects.length > 0 ? projects : fallbackProjects
+  const displayOpenSourceProjects = openSourceProjects && openSourceProjects.length > 0 ? openSourceProjects : fallbackOpenSourceProjects
+
   return (
     <>
       <Head>
@@ -162,12 +172,14 @@ export default function Projects() {
           role="list"
           className="grid grid-cols-1 gap-x-12 gap-y-16 sm:grid-cols-2 lg:grid-cols-3"
         >
-          {projects.map((project) => (
+          {displayProjects.map((project) => (
             <Card as="li" key={project.name}>
               <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-md shadow-zinc-800/5 ring-1 ring-zinc-900/5 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0">
                 <Image
                   src={project.logo}
                   alt=""
+                  width={32}
+                  height={32}
                   className="h-8 w-8 object-contain"
                   unoptimized
                 />
@@ -191,12 +203,14 @@ export default function Projects() {
           role="list"
           className="grid grid-cols-1 gap-x-12 gap-y-16 sm:grid-cols-2 lg:grid-cols-3"
         >
-          {openSourceProjects.map((project) => (
+          {displayOpenSourceProjects.map((project) => (
             <Card as="li" key={project.name}>
               <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-md shadow-zinc-800/5 ring-1 ring-zinc-900/5 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0">
                 <Image
                   src={project.logo}
                   alt=""
+                  width={32}
+                  height={32}
                   className="h-8 w-8 object-contain"
                   unoptimized
                 />
@@ -217,4 +231,40 @@ export default function Projects() {
       </SimpleLayout>
     </>
   )
+}
+
+export const getStaticProps: GetStaticProps<ProjectsProps> = async () => {
+  // Fetch projects from Strapi
+  const [professionalProjects, opensourceProjects] = await Promise.all([
+    getProjects('professional'),
+    getProjects('opensource'),
+  ])
+
+  // Transform professional projects
+  const projects: Project[] | undefined = professionalProjects.length > 0
+    ? professionalProjects.map((p) => ({
+        name: p.name,
+        description: p.description,
+        link: { href: p.url, label: p.urlLabel },
+        logo: getStrapiMediaUrl(p.logo) || logoOpenShuttle,
+      }))
+    : undefined
+
+  // Transform opensource projects
+  const openSourceProjects: Project[] | undefined = opensourceProjects.length > 0
+    ? opensourceProjects.map((p) => ({
+        name: p.name,
+        description: p.description,
+        link: { href: p.url, label: p.urlLabel },
+        logo: getStrapiMediaUrl(p.logo) || githubLogo,
+      }))
+    : undefined
+
+  return {
+    props: {
+      projects,
+      openSourceProjects,
+    },
+    revalidate: 3600,
+  }
 }

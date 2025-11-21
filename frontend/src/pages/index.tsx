@@ -17,6 +17,15 @@ import harman from '@/images/logos/harman_International_logo.svg.png'
 import { formatDate } from '@/lib/formatDate'
 import { generateRssFeed } from '@/lib/generateRssFeed'
 import { getAllArticles } from '@/lib/getAllArticles'
+import {
+  getPersonalInfo,
+  getSocialLinks,
+  getWorkExperiences,
+  getStrapiMediaUrl,
+  type StrapiPersonalInfo,
+  type StrapiSocialLink,
+  type StrapiWorkExperience,
+} from '@/lib/strapi'
 import type { StaticImageData } from 'next/image'
 
 function MailIcon(props: SVGProps<SVGSVGElement>) {
@@ -147,52 +156,59 @@ function Newsletter() {
 interface Role {
   company: string
   title: string
-  logo: StaticImageData
+  logo: StaticImageData | string
   start: string | { label: string; dateTime: number }
   end: string | { label: string; dateTime: number }
 }
 
-function Resume() {
-  const resume: Role[] = [
-    {
-      company: 'Harman',
-      title: 'Technical Lead',
-      logo: harman,
-      start: '2023',
-      end: {
-        label: 'Present',
-        dateTime: new Date().getFullYear(),
-      },
+// Fallback data when Strapi is not available
+const fallbackResume: Role[] = [
+  {
+    company: 'Harman',
+    title: 'Technical Lead',
+    logo: harman,
+    start: '2023',
+    end: {
+      label: 'Present',
+      dateTime: new Date().getFullYear(),
     },
-    {
-      company: 'HCL Technologies Ltd',
-      title: 'React.js Developer',
-      logo: hcllogo,
-      start: '2021',
-      end: '2023',
-    },
-    {
-      company: 'Go Digit Insurance',
-      title: 'Software Engineer',
-      logo: godigit,
-      start: '2018',
-      end: '2021',
-    },
-    {
-      company: 'Valtech, Dubai',
-      title: 'Front-end Consultant',
-      logo: valtech,
-      start: '2018',
-      end: '2018',
-    },
-    {
-      company: 'Lollypop UX/UI Design Studio',
-      title: 'Frond End Supervisor',
-      logo: lollypop,
-      start: '2016',
-      end: '2018',
-    },
-  ]
+  },
+  {
+    company: 'HCL Technologies Ltd',
+    title: 'React.js Developer',
+    logo: hcllogo,
+    start: '2021',
+    end: '2023',
+  },
+  {
+    company: 'Go Digit Insurance',
+    title: 'Software Engineer',
+    logo: godigit,
+    start: '2018',
+    end: '2021',
+  },
+  {
+    company: 'Valtech, Dubai',
+    title: 'Front-end Consultant',
+    logo: valtech,
+    start: '2018',
+    end: '2018',
+  },
+  {
+    company: 'Lollypop UX/UI Design Studio',
+    title: 'Frond End Supervisor',
+    logo: lollypop,
+    start: '2016',
+    end: '2018',
+  },
+]
+
+interface ResumeProps {
+  workExperiences?: Role[]
+}
+
+function Resume({ workExperiences }: ResumeProps) {
+  const resume = workExperiences && workExperiences.length > 0 ? workExperiences : fallbackResume
 
   return (
     <div className="rounded-2xl border border-zinc-100 p-6 dark:border-zinc-700/40">
@@ -214,6 +230,8 @@ function Resume() {
                   src={role.logo}
                   alt={role.title}
                   className="h-7 w-7 object-contain"
+                  width={28}
+                  height={28}
                   unoptimized
                 />
               </div>
@@ -263,48 +281,77 @@ function Resume() {
   )
 }
 
-export default function Home({ articles }: InferGetStaticPropsType<typeof getStaticProps>) {
+// Fallback personal info
+const fallbackPersonalInfo = {
+  name: 'Vijay Kolar',
+  title: 'Technical Lead',
+  tagline: "I'm Vijay, a Technical Lead and UI Designer based in Bengaluru. I specialize in developing innovative technologies that make space exploration more accessible. By combining technical expertise with user-centered design, I aim to empower individuals to explore space on their own terms, enhancing their experience and engagement.",
+}
+
+// Fallback social links
+const fallbackSocialLinks = [
+  { platform: 'twitter' as const, url: 'https://twitter.com/_vkolar', label: 'Follow on Twitter' },
+  { platform: 'github' as const, url: 'https://github.com/vijaykolar', label: 'Follow on GitHub' },
+  { platform: 'linkedin' as const, url: 'https://www.linkedin.com/in/vijaykolar/', label: 'Follow on LinkedIn' },
+]
+
+// Map platform to icon
+const socialIconMap: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
+  twitter: TwitterIcon,
+  github: GitHubIcon,
+  linkedin: LinkedInIcon,
+}
+
+interface HomeProps {
+  articles: ArticleType[]
+  personalInfo?: {
+    name: string
+    title: string
+    tagline: string
+  }
+  socialLinks?: Array<{
+    platform: string
+    url: string
+    label: string
+  }>
+  workExperiences?: Role[]
+}
+
+export default function Home({ articles, personalInfo, socialLinks, workExperiences }: HomeProps) {
+  const info = personalInfo || fallbackPersonalInfo
+  const links = socialLinks && socialLinks.length > 0 ? socialLinks : fallbackSocialLinks
+
   return (
     <>
       <Head>
-        <title>Vijay Kolar - Software developer, designer</title>
+        <title>{info.name} - Software developer, designer</title>
         <meta
           name="description"
-          content="I'm Vijay, a software developer, designer based in Bengaluru. "
+          content={`I'm ${info.name}, a software developer, designer based in Bengaluru.`}
         />
       </Head>
       <Container className="mt-9">
         <div className="max-w-2xl">
           <h1 className="text-3xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 sm:text-5xl">
-            Technical Lead
+            {info.title}
           </h1>
           <p className="mt-4 text-base text-zinc-600 dark:text-zinc-400">
-            I'm Vijay, a Technical Lead and UI Designer based in Bengaluru. I
-            specialize in developing innovative technologies that make space
-            exploration more accessible. By combining technical expertise with
-            user-centered design, I aim to empower individuals to explore space
-            on their own terms, enhancing their experience and engagement.
+            {info.tagline}
           </p>
           <div className="mt-6 flex gap-6">
-            <SocialLink
-              href="https://twitter.com/_vkolar"
-              aria-label="Follow on Twitter"
-              icon={TwitterIcon}
-              target="_blank"
-            />
-
-            <SocialLink
-              href="https://github.com/vijaykolar"
-              aria-label="Follow on GitHub"
-              icon={GitHubIcon}
-              target="_blank"
-            />
-            <SocialLink
-              href="https://www.linkedin.com/in/vijaykolar/"
-              aria-label="Follow on LinkedIn"
-              icon={LinkedInIcon}
-              target="_blank"
-            />
+            {links.map((link) => {
+              const Icon = socialIconMap[link.platform]
+              if (!Icon) return null
+              return (
+                <SocialLink
+                  key={link.platform}
+                  href={link.url}
+                  aria-label={link.label}
+                  icon={Icon}
+                  target="_blank"
+                />
+              )
+            })}
           </div>
         </div>
       </Container>
@@ -317,7 +364,7 @@ export default function Home({ articles }: InferGetStaticPropsType<typeof getSta
           </div>
           <div className="space-y-10 lg:pl-16 xl:pl-24">
             <Newsletter />
-            <Resume />
+            <Resume workExperiences={workExperiences} />
           </div>
         </div>
       </Container>
@@ -325,18 +372,62 @@ export default function Home({ articles }: InferGetStaticPropsType<typeof getSta
   )
 }
 
-export const getStaticProps: GetStaticProps<{
-  articles: ArticleType[]
-}> = async () => {
+export const getStaticProps: GetStaticProps<HomeProps> = async () => {
   if (process.env.NODE_ENV === 'production') {
     await generateRssFeed()
   }
 
+  // Fetch articles from MDX files
+  const articles = (await getAllArticles())
+    .slice(0, 4)
+    .map(({ component, ...meta }) => meta)
+
+  // Fetch data from Strapi
+  const [personalInfoData, socialLinksData, workExperiencesData] = await Promise.all([
+    getPersonalInfo(),
+    getSocialLinks(),
+    getWorkExperiences(),
+  ])
+
+  // Transform personal info
+  const personalInfo = personalInfoData
+    ? {
+        name: personalInfoData.name,
+        title: personalInfoData.title,
+        tagline: personalInfoData.tagline,
+      }
+    : undefined
+
+  // Transform social links
+  const socialLinks = socialLinksData.length > 0
+    ? socialLinksData.map((link) => ({
+        platform: link.platform,
+        url: link.url,
+        label: link.label,
+      }))
+    : undefined
+
+  // Transform work experiences
+  const workExperiences: Role[] | undefined = workExperiencesData.length > 0
+    ? workExperiencesData.map((exp) => ({
+        company: exp.company,
+        title: exp.title,
+        logo: getStrapiMediaUrl(exp.logo) || harman,
+        start: exp.startDate,
+        end: exp.isCurrentRole
+          ? { label: 'Present', dateTime: new Date().getFullYear() }
+          : exp.endDate || 'Present',
+      }))
+    : undefined
+
   return {
     props: {
-      articles: (await getAllArticles())
-        .slice(0, 4)
-        .map(({ component, ...meta }) => meta),
+      articles,
+      personalInfo,
+      socialLinks,
+      workExperiences,
     },
+    // Revalidate every hour for ISR
+    revalidate: 3600,
   }
 }

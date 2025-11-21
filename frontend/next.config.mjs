@@ -6,6 +6,27 @@ import rehypePrism from '@mapbox/rehype-prism'
 const nextConfig = {
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'mdx'],
   reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '1337',
+        pathname: '/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.strapi.io',
+        pathname: '/uploads/**',
+      },
+      // Add your production Strapi URL here
+      // {
+      //   protocol: 'https',
+      //   hostname: 'your-strapi-domain.com',
+      //   pathname: '/uploads/**',
+      // },
+    ],
+  },
 }
 
 const withMDX = nextMDX({
