@@ -1,11 +1,19 @@
 import Head from 'next/head'
+import type { GetStaticProps, InferGetStaticPropsType } from 'next'
 
 import { Card } from '@/components/Card'
 import { SimpleLayout } from '@/components/SimpleLayout'
 import { formatDate } from '@/lib/formatDate'
 import { getAllArticles } from '@/lib/getAllArticles'
 
-function Article({ article }) {
+interface ArticleType {
+  slug: string
+  title: string
+  date: string
+  description: string
+}
+
+function Article({ article }: { article: ArticleType }) {
   return (
     <article className="md:grid md:grid-cols-4 md:items-baseline">
       <Card className="md:col-span-3">
@@ -34,7 +42,7 @@ function Article({ article }) {
   )
 }
 
-export default function ArticlesIndex({ articles }) {
+export default function ArticlesIndex({ articles }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
     <>
       <Head>
@@ -60,7 +68,9 @@ export default function ArticlesIndex({ articles }) {
   )
 }
 
-export async function getStaticProps() {
+export const getStaticProps: GetStaticProps<{
+  articles: ArticleType[]
+}> = async () => {
   return {
     props: {
       articles: (await getAllArticles()).map(({ component, ...meta }) => meta),

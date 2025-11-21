@@ -2,17 +2,24 @@ import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
 import clsx from 'clsx'
+import type { SVGProps, ComponentType, ReactNode } from 'react'
 
 import { Container } from '@/components/Container'
 import {
   GitHubIcon,
-  InstagramIcon,
   LinkedInIcon,
   TwitterIcon,
 } from '@/components/SocialIcons'
 import portraitImage from '@/images/avatar.jpg'
 
-function SocialLink({ className, href, children, icon: Icon }) {
+interface SocialLinkProps {
+  className?: string
+  href: string
+  children: ReactNode
+  icon: ComponentType<SVGProps<SVGSVGElement>>
+}
+
+function SocialLink({ className, href, children, icon: Icon }: SocialLinkProps) {
   return (
     <li className={clsx(className, 'flex')}>
       <Link
@@ -27,7 +34,7 @@ function SocialLink({ className, href, children, icon: Icon }) {
   )
 }
 
-function MailIcon(props) {
+function MailIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
       <path
@@ -45,7 +52,7 @@ export default function About() {
         <title>About - Vijay Kolar</title>
         <meta
           name="description"
-          content="I’m Vijay Kolar. I live in Bengaluru, where I develop the future."
+          content="I'm Vijay Kolar. I live in Bengaluru, where I develop the future."
         />
       </Head>
       <Container className="mt-16 sm:mt-32">
@@ -62,7 +69,7 @@ export default function About() {
           </div>
           <div className="lg:order-first lg:row-span-2">
             <h1 className="text-4xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 sm:text-5xl">
-              I’m Kolar Vijay. I live in Bengaluru City, where I develop the
+              I'm Kolar Vijay. I live in Bengaluru City, where I develop the
               future.
             </h1>
             <div className="mt-6 space-y-7 text-base text-zinc-600 dark:text-zinc-400">

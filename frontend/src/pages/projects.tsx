@@ -1,19 +1,24 @@
 import Head from 'next/head'
 import Image from 'next/image'
+import type { SVGProps } from 'react'
+import type { StaticImageData } from 'next/image'
 
 import { Card } from '@/components/Card'
 import { SimpleLayout } from '@/components/SimpleLayout'
-import logoAnimaginary from '@/images/logos/animaginary.svg'
-import logoCosmos from '@/images/logos/cosmos.svg'
-import logoHelioStream from '@/images/logos/helio-stream.svg'
 import logoOpenShuttle from '@/images/logos/open-shuttle.svg'
-import logoPlanetaria from '@/images/logos/planetaria.svg'
 import lollypopLogo from '@/images/logos/lollypo-logo.png'
 import digitLogo from '@/images/logos/go-digit.png'
 import valtechLogo from '@/images/logos/valtech.png'
 import githubLogo from '@/images/logos/github.png'
 
-const projects = [
+interface Project {
+  name: string
+  description: string
+  link: { href: string; label: string }
+  logo: StaticImageData
+}
+
+const projects: Project[] = [
   {
     name: 'Lollypop Design Studio',
     description:
@@ -59,7 +64,7 @@ const projects = [
   },
 ]
 
-const openSourceProjects = [
+const openSourceProjects: Project[] = [
   {
     name: 'Project Management',
     description:
@@ -128,7 +133,7 @@ const openSourceProjects = [
   },
 ]
 
-function LinkIcon(props) {
+function LinkIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
       <path
@@ -146,12 +151,12 @@ export default function Projects() {
         <title>Projects - Vijay Kolar</title>
         <meta
           name="description"
-          content="Things I’ve made trying to put my dent in the universe."
+          content="Things I've made trying to put my dent in the universe."
         />
       </Head>
       <SimpleLayout
-        title="Things I’ve made trying to put my dent in the universe."
-        intro="I’ve worked on few of little projects over the years but these are the ones that I’m most proud of. Few of them are open-source, so if you see something that piques your interest, check out the code and contribute if you have ideas for how it can be improved."
+        title="Things I've made trying to put my dent in the universe."
+        intro="I've worked on few of little projects over the years but these are the ones that I'm most proud of. Few of them are open-source, so if you see something that piques your interest, check out the code and contribute if you have ideas for how it can be improved."
       >
         <ul
           role="list"
