@@ -4,9 +4,10 @@ Context notes for the blog / CMS / auto-posting setup. Update this when the setu
 
 ## Overview
 
-Monorepo:
+Repo:
 - `frontend/` — Next.js 15 (Pages Router) portfolio + blog. TypeScript, Tailwind, deployed on Vercel.
-- `backend/` — small Express + SendGrid mailing-list endpoint (unrelated to the blog).
+  (A former standalone `backend/` Express server was removed — all server logic, including the
+  newsletter, now lives in Next.js API routes under `frontend/src/pages/api/`.)
 
 The blog uses **Keystatic** (free, MIT, git-based CMS) with articles stored as a **frontmatter MDX
 content collection**. There is also an **automated poster** that publishes a new article every 3 days.
@@ -57,8 +58,10 @@ content collection**. There is also an **automated poster** that publishes a new
 ## Newsletter (subscribe + notify)
 
 Signups are stored as **SendGrid Marketing Contacts**; new posts are emailed to that
-list via a SendGrid **Single Send**. All code is Next.js API routes (no separate server;
-the `backend/` Express app is superseded and unused).
+list via a SendGrid **Single Send**. All code is Next.js API routes (no separate server).
+
+> NOTE: the old `backend/` Express server (removed) had `backend/.env` committed with a real
+> `SENDGRID_API_KEY`. That key remains in git history — **rotate it in SendGrid**.
 
 - `frontend/src/lib/sendgrid.ts` — `addContactToList`, `sendWelcomeEmail`, `sendNewsletter`
   (thin `fetch` wrappers over the SendGrid v3 API).
