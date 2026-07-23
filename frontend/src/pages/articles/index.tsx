@@ -73,7 +73,7 @@ export const getStaticProps: GetStaticProps<{
 }> = async () => {
   return {
     props: {
-      articles: (await getAllArticles()).map(({ component, ...meta }) => meta),
+      articles: await getAllArticles(),
     },
   }
 }

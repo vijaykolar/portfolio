@@ -334,9 +334,7 @@ export const getStaticProps: GetStaticProps<{
 
   return {
     props: {
-      articles: (await getAllArticles())
-        .slice(0, 4)
-        .map(({ component, ...meta }) => meta),
+      articles: (await getAllArticles()).slice(0, 4),
     },
   }
 }

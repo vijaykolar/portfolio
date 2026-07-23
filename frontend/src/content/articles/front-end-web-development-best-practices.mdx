@@ -1,22 +1,18 @@
-import { ArticleLayout } from '@/components/ArticleLayout'
-import Image from 'next/image'
-import computer from '../../../images/blog/front-end-web-development-best-practices/computer.jpg'
-import folderStructure from '../../../images/blog/front-end-web-development-best-practices/code_1.webp'
-
-export const meta = {
-  author: 'Vijay Kolar',
-  date: '2024-12-19',
-  title:
-    'Front-End Web Development Best Practices From My Experience in the Industry',
-  description:
-    'If you’re not following these already, consider starting right away',
-}
-
-export default (props) => <ArticleLayout meta={meta} {...props} />
+---
+title: "Front-End Web Development Best Practices From My Experience in the Industry"
+author: Vijay Kolar
+date: "2024-12-19"
+description: "If you’re not following these already, consider starting right away"
+---
 
 A few months ago, I started working on a one-year web application development project, and I realized how many developers are not quite aware of the best industrial practices in the front-end development of web apps. Even I was not aware of some practices as well. So I decided to write this article to share what I know and what I have learned about the best practices to follow when developing a web application.
 
-<Image src={computer} alt="Computer" />
+<Image
+  src="/images/articles/front-end-web-development-best-practices/computer.jpg"
+  alt="Computer"
+  width={1100}
+  height={565}
+/>
 
 This article will focus on best practices in front-end development because the quality of the front-end code is the most deciding factor of a great web app in my experience, but most developers fail to follow these practices and develop their individual components. If front-end developers do not follow these practices, it will be really difficult to manage the code, there will be no consistency across the design, and the web app’s speed will also have a negative impact. Following these practices will make the code clean and easy to manage, and will increase the productivity of all the developers.
 
@@ -33,8 +29,10 @@ Inside the styles' folder, create separate folders for configurations, base, lay
 <div style={{ textAlign: 'center' }}>
   <Image
     style={{ margin: '0 auto' }}
-    src={folderStructure}
+    src="/images/articles/front-end-web-development-best-practices/code_1.webp"
     alt="Folder structure"
+    width={299}
+    height={184}
   />
   <span> screenshot of style file structure </span>
 </div>
