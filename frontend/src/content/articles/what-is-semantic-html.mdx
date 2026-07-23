@@ -1,19 +1,9 @@
-import { ArticleLayout } from '@/components/ArticleLayout'
-import Image from 'next/image'
-import semanticTags from '../../images/blog/what-are-semantic-tags/semantic-tags-pic.png'
-import semanticHTML from '../../images/blog/what-are-semantic-tags/semantic-html.png'
-import nestedHeading from '../../images/blog/what-are-semantic-tags/nested-heading.png'
-import visualLayout from '../../images/blog/what-are-semantic-tags/visual-layout.png'
-
-export const meta = {
-  author: 'Vijay Kolar',
-  date: '2024-11-27',
-  title: 'What Is Semantic HTML?',
-  description:
-    'Semantic HTML, also known as semantic markup, refers to the use of HTML tags that convey the meaning—or semantics—of the content contained within them.',
-}
-
-export default (props) => <ArticleLayout meta={meta} {...props} />
+---
+title: "What Is Semantic HTML?"
+author: Vijay Kolar
+date: "2024-11-27"
+description: "Semantic HTML, also known as semantic markup, refers to the use of HTML tags that convey the meaning—or semantics—of the content contained within them."
+---
 
 Semantic HTML, also known as semantic markup, refers to the use of HTML tags that convey the meaning—or semantics—of the content contained within them.
 
@@ -21,8 +11,10 @@ By adding semantic HTML tags to your pages, you provide additional information t
 
 <Image
   className="aspect-auto h-1/2 w-1/2 border border-gray-300 p-5"
-  src={semanticTags}
+  src="/images/articles/what-is-semantic-html/semantic-tags-pic.png"
   alt="semantic tags"
+  width={705}
+  height={675}
 />
 
 <strong>Note:</strong> HTML is a language that is used to structure a website. This
@@ -73,8 +65,10 @@ These “structural” tags were introduced when HTML4 got upgraded to HTML5. Th
 
 <Image
   className="mx-auto aspect-auto h-80 w-1/2 border border-gray-300 p-5"
-  src={semanticHTML}
+  src="/images/articles/what-is-semantic-html/semantic-html.png"
   alt="semantic HTML"
+  width={385}
+  height={622}
 />
 
 Here’s a full list:
@@ -161,8 +155,10 @@ For example, all the H3 headings that follow a certain H2 heading should be subt
 
 <Image
   className="aspect-auto h-1/2 w-1/2 border border-gray-300 p-5"
-  src={nestedHeading}
+  src="/images/articles/what-is-semantic-html/nested-heading.png"
   alt="Nested heading tags"
+  width={697}
+  height={445}
 />
 
 This way, the structure of headings creates a logical hierarchy of the topics within your piece of content and helps both readers and search engines better understand and navigate the text.
@@ -180,8 +176,10 @@ Let’s take a look at this example:
 <div className="border border-gray-300 p-5 dark:border-red-300">
   <Image
     className="aspect-auto h-1/2 w-1/2 "
-    src={visualLayout}
+    src="/images/articles/what-is-semantic-html/visual-layout.png"
     alt="Visual Layout"
+    width={714}
+    height={466}
   />
 </div>
 
