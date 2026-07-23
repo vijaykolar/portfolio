@@ -54,6 +54,26 @@ content collection**. There is also an **automated poster** that publishes a new
 - Manage via the claude-code-remote trigger tools (`update_trigger` / `delete_trigger` /
   `fire_trigger`) or the claude.ai Routines UI.
 
+## Newsletter (subscribe + notify)
+
+Signups are stored as **SendGrid Marketing Contacts**; new posts are emailed to that
+list via a SendGrid **Single Send**. All code is Next.js API routes (no separate server;
+the `backend/` Express app is superseded and unused).
+
+- `frontend/src/lib/sendgrid.ts` — `addContactToList`, `sendWelcomeEmail`, `sendNewsletter`
+  (thin `fetch` wrappers over the SendGrid v3 API).
+- `frontend/src/pages/api/subscribe.ts` — POST `{ email }` → add to list (+ best-effort welcome email).
+- `frontend/src/pages/api/notify.ts` — POST `{ slug, title?, description? }`, protected by
+  `Authorization: Bearer $NEWSLETTER_NOTIFY_SECRET`; sends the Single Send. If `title` is
+  omitted it's looked up from the published `/rss/feed.json` by slug (avoids reading the
+  content FS at runtime, which isn't reliable in serverless).
+- Homepage `Newsletter` form (`frontend/src/pages/index.tsx`) now POSTs to `/api/subscribe`
+  then redirects to `/thank-you` (was a no-op `action="/thank-you"` that saved nothing).
+- The **auto-poster** calls `/api/notify` after publishing (step 8 of its prompt), gated on
+  `NEXT_PUBLIC_SITE_URL` + `NEWSLETTER_NOTIFY_SECRET` being set in the CCR environment.
+- To send a newsletter for a **manual** post:
+  `curl -X POST "$SITE/api/notify" -H "Authorization: Bearer $NEWSLETTER_NOTIFY_SECRET" -H 'Content-Type: application/json' -d '{"slug":"<slug>"}'`
+
 ## Environment variables
 
 - `NEXT_PUBLIC_SITE_URL` — site base URL (RSS/canonical). Pre-existing.
@@ -66,6 +86,12 @@ content collection**. There is also an **automated poster** that publishes a new
     Contents R/W + Metadata RO. Steps in `frontend/.env.example`.
 - **Status:** the GitHub App is NOT yet set up (pending user action) — live `/keystatic` is read-only
   until it is; local editing works without it.
+- **Newsletter (SendGrid)** — set on Vercel: `SENDGRID_API_KEY` (Mail Send + Marketing perms),
+  `SENDGRID_LIST_ID`, `SENDGRID_FROM_EMAIL` (verified sender, welcome email), `SENDGRID_SENDER_ID`
+  (numeric verified sender identity), `SENDGRID_UNSUBSCRIBE_GROUP_ID` (numeric suppression group),
+  `NEWSLETTER_NOTIFY_SECRET` (protects /api/notify). For auto-notify, also set
+  `NEXT_PUBLIC_SITE_URL` + `NEWSLETTER_NOTIFY_SECRET` in the CCR environment. See `frontend/.env.example`.
+  **Status:** SendGrid vars NOT yet set (pending user action) — signup/notify return errors until configured.
 
 ## Gotchas / decisions (learned the hard way)
 
@@ -85,3 +111,5 @@ content collection**. There is also an **automated poster** that publishes a new
 ## History
 - PR #7 — Keystatic CMS + content migration (merged).
 - PR #8 — default to local storage so builds never require secrets (merged).
+- PR #9 — add memory.md (merged).
+- Newsletter — subscribe/notify API routes + SendGrid storage + poster notify step.
