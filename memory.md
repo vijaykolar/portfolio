@@ -74,6 +74,63 @@ the `backend/` Express app is superseded and unused).
 - To send a newsletter for a **manual** post:
   `curl -X POST "$SITE/api/notify" -H "Authorization: Bearer $NEWSLETTER_NOTIFY_SECRET" -H 'Content-Type: application/json' -d '{"slug":"<slug>"}'`
 
+## SendGrid setup (one-time)
+
+Do these in the SendGrid dashboard (https://app.sendgrid.com). Each step ends with the
+env var it produces — put those in Vercel → Project → Settings → Environment Variables
+(and in `frontend/.env.local` if testing locally). UI labels drift over time; the API
+`curl`s below are the reliable way to read the numeric IDs.
+
+**0. (Strongly recommended first) Authenticate your sending domain.**
+Settings → Sender Authentication → **Authenticate Your Domain**. Pick your DNS host, enter
+your domain, and add the CNAME records it generates to DNS. This sets up SPF/DKIM so bulk
+mail actually lands in inboxes. Without it, newsletters often go to spam. Not an env var,
+but do it before you have real subscribers.
+
+**1. API key** → `SENDGRID_API_KEY`
+Settings → API Keys → **Create API Key** → **Restricted Access**. Grant:
+- **Mail Send** → Full Access (welcome email)
+- **Marketing** → Full Access (contacts + single sends)
+Create, then **copy the key immediately** (shown once).
+
+**2. Verified sender** → `SENDGRID_FROM_EMAIL` + `SENDGRID_SENDER_ID`
+Marketing → Senders → **Create New Sender** (fill name, the from address, reply-to, address).
+Verify it via the confirmation email.
+- `SENDGRID_FROM_EMAIL` = that sender's from address.
+- `SENDGRID_SENDER_ID` = its numeric id. Read it with:
+  ```
+  curl -s https://api.sendgrid.com/v3/marketing/senders \
+    -H "Authorization: Bearer $SENDGRID_API_KEY" | jq '.results[] | {id, from: .from.email}'
+  ```
+
+**3. Contact list** → `SENDGRID_LIST_ID`
+Marketing → Contacts → **Lists** → **Create List** (e.g. "Blog subscribers"). Get its id:
+```
+curl -s https://api.sendgrid.com/v3/marketing/lists \
+  -H "Authorization: Bearer $SENDGRID_API_KEY" | jq '.result[] | {id, name}'
+```
+(This is the list `/api/subscribe` adds people to and `/api/notify` sends to.)
+
+**4. Unsubscribe group** → `SENDGRID_UNSUBSCRIBE_GROUP_ID`
+Settings → **Unsubscribe Groups** → **Create New Group** (e.g. name "Blog newsletter",
+description "New post announcements"). Single Sends require this for CAN-SPAM/unsubscribe
+compliance. Get its id:
+```
+curl -s https://api.sendgrid.com/v3/asm/groups \
+  -H "Authorization: Bearer $SENDGRID_API_KEY" | jq '.[] | {id, name}'
+```
+
+**5. Notify secret** → `NEWSLETTER_NOTIFY_SECRET`
+Generate any random string (`openssl rand -hex 32`). Set the SAME value in Vercel and in the
+CCR automation environment so the auto-poster can authenticate to `/api/notify`.
+
+**6. Also set** `NEXT_PUBLIC_SITE_URL` (deployed base URL, no trailing slash) in both Vercel
+and the CCR environment.
+
+**Verify end to end** (after deploying with the vars set):
+- Subscribe: `curl -X POST "$SITE/api/subscribe" -H 'Content-Type: application/json' -d '{"email":"you@example.com"}'` → `{"ok":true}`, and the contact appears in the list.
+- Notify: `curl -X POST "$SITE/api/notify" -H "Authorization: Bearer $NEWSLETTER_NOTIFY_SECRET" -H 'Content-Type: application/json' -d '{"slug":"what-is-semantic-html"}'` → `{"ok":true,...}` and the email arrives.
+
 ## Environment variables
 
 - `NEXT_PUBLIC_SITE_URL` — site base URL (RSS/canonical). Pre-existing.
