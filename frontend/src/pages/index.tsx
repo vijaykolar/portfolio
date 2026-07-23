@@ -1,8 +1,10 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
+import { useState } from 'react'
 import type { GetStaticProps, InferGetStaticPropsType } from 'next'
-import type { SVGProps, ComponentType } from 'react'
+import type { FormEvent, SVGProps, ComponentType } from 'react'
 
 import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
@@ -116,9 +118,31 @@ function SocialLink({ icon: Icon, ...props }: SocialLinkProps) {
 }
 
 function Newsletter() {
+  const router = useRouter()
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const email = String(new FormData(event.currentTarget).get('email') ?? '')
+    setStatus('loading')
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      if (!res.ok) {
+        throw new Error('Subscribe failed')
+      }
+      router.push('/thank-you')
+    } catch {
+      setStatus('error')
+    }
+  }
+
   return (
     <form
-      action="/thank-you"
+      onSubmit={handleSubmit}
       className="rounded-2xl border border-zinc-100 p-6 dark:border-zinc-700/40"
     >
       <h2 className="flex text-sm font-semibold text-zinc-900 dark:text-zinc-100">
@@ -130,16 +154,22 @@ function Newsletter() {
       </p>
       <div className="mt-6 flex">
         <input
+          name="email"
           type="email"
           placeholder="Email address"
           aria-label="Email address"
           required
           className="min-w-0 flex-auto appearance-none rounded-md border border-zinc-900/10 bg-white px-3 py-[calc(theme(spacing.2)-1px)] shadow-md shadow-zinc-800/5 placeholder:text-zinc-400 focus:border-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-500/10 dark:border-zinc-700 dark:bg-zinc-700/[0.15] dark:text-zinc-200 dark:placeholder:text-zinc-500 dark:focus:border-teal-400 dark:focus:ring-teal-400/10 sm:text-sm"
         />
-        <Button type="submit" className="ml-4 flex-none">
-          Join
+        <Button type="submit" className="ml-4 flex-none" disabled={status === 'loading'}>
+          {status === 'loading' ? 'Joining…' : 'Join'}
         </Button>
       </div>
+      {status === 'error' && (
+        <p className="mt-2 text-sm text-red-500">
+          Something went wrong. Please try again.
+        </p>
+      )}
     </form>
   )
 }
