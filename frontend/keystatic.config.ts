@@ -1,18 +1,21 @@
 import { config, fields, collection } from '@keystatic/core'
 
-// Local storage in development (no GitHub App needed); GitHub storage in
-// production so posts can be authored/published from the deployed /keystatic
-// admin. `pathPrefix: 'frontend'` accounts for this app living in the
-// `frontend/` subdirectory of the monorepo: collection `path`s stay relative
-// to the app root, while GitHub commits land at `frontend/src/content/...`.
+// Storage defaults to `local` (filesystem) so the site always builds without
+// any secrets. Opt into GitHub storage — which lets you author/publish from
+// the deployed /keystatic admin — by setting NEXT_PUBLIC_KEYSTATIC_STORAGE=github
+// AND the three KEYSTATIC_GITHUB_* / KEYSTATIC_SECRET vars (see .env.example).
+// The flag is NEXT_PUBLIC so the client admin UI and server API agree on the mode.
+// `pathPrefix: 'frontend'` accounts for this app living in the `frontend/`
+// subdirectory of the monorepo: collection `path`s stay relative to the app
+// root, while GitHub commits land at `frontend/src/content/...`.
 const storage =
-  process.env.NODE_ENV === 'development'
-    ? ({ kind: 'local' } as const)
-    : ({
+  process.env.NEXT_PUBLIC_KEYSTATIC_STORAGE === 'github'
+    ? ({
         kind: 'github',
         repo: { owner: 'vijaykolar', name: 'portfolio' },
         pathPrefix: 'frontend',
       } as const)
+    : ({ kind: 'local' } as const)
 
 export default config({
   storage,
