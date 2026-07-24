@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" role="img" aria-label="Traditional software follows hand-written rules; modern AI learns patterns from data.">
+  <rect width="800" height="400" rx="16" fill="#F8FAFC"/>
+  <rect x="0.5" y="0.5" width="799" height="399" rx="16" fill="none" stroke="#E2E8F0"/>
+
+  <!-- divider -->
+  <line x1="400" y1="48" x2="400" y2="352" stroke="#E2E8F0" stroke-width="2" stroke-dasharray="4 6"/>
+
+  <!-- LEFT: Traditional -->
+  <text x="200" y="52" text-anchor="middle" font-family="ui-sans-serif,system-ui,Arial" font-size="20" font-weight="700" fill="#0F172A">Traditional Software</text>
+
+  <g font-family="ui-sans-serif,system-ui,Arial" font-size="14" fill="#334155">
+    <rect x="70" y="90" width="260" height="52" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="200" y="122" text-anchor="middle" font-weight="600" fill="#0F172A">Rules written by hand</text>
+
+    <rect x="70" y="182" width="260" height="52" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="200" y="214" text-anchor="middle" font-weight="600" fill="#0F172A">Program follows them</text>
+
+    <rect x="70" y="274" width="260" height="52" rx="10" fill="#EEF2FF" stroke="#C7D2FE"/>
+    <text x="200" y="306" text-anchor="middle" font-weight="600" fill="#3730A3">Fixed, exact output</text>
+  </g>
+  <g stroke="#94A3B8" stroke-width="2" fill="none">
+    <path d="M200 142 L200 178" marker-end="url(#ah)"/>
+    <path d="M200 234 L200 270" marker-end="url(#ah)"/>
+  </g>
+
+  <!-- RIGHT: AI -->
+  <text x="600" y="52" text-anchor="middle" font-family="ui-sans-serif,system-ui,Arial" font-size="20" font-weight="700" fill="#0F172A">Modern AI</text>
+
+  <g font-family="ui-sans-serif,system-ui,Arial" font-size="14">
+    <rect x="470" y="90" width="260" height="52" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="600" y="122" text-anchor="middle" font-weight="600" fill="#0F172A">Learns from lots of data</text>
+
+    <rect x="470" y="182" width="260" height="52" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="600" y="214" text-anchor="middle" font-weight="600" fill="#0F172A">Model finds the patterns</text>
+
+    <rect x="470" y="274" width="260" height="52" rx="10" fill="#F5F3FF" stroke="#DDD6FE"/>
+    <text x="600" y="306" text-anchor="middle" font-weight="600" fill="#6D28D9">Flexible, natural output</text>
+  </g>
+  <g stroke="#A78BFA" stroke-width="2" fill="none">
+    <path d="M600 142 L600 178" marker-end="url(#ahv)"/>
+    <path d="M600 234 L600 270" marker-end="url(#ahv)"/>
+  </g>
+
+  <defs>
+    <marker id="ah" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0 0 L8 5 L0 10 z" fill="#94A3B8"/></marker>
+    <marker id="ahv" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0 0 L8 5 L0 10 z" fill="#A78BFA"/></marker>
+  </defs>
+</svg>
