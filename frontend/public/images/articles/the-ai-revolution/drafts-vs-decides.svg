@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 380" role="img" aria-label="The AI drafts the work; the developer reviews, tests and decides what ships.">
+  <rect width="800" height="380" rx="16" fill="#F8FAFC"/>
+  <rect x="0.5" y="0.5" width="799" height="379" rx="16" fill="none" stroke="#E2E8F0"/>
+
+  <text x="400" y="52" text-anchor="middle" font-family="ui-sans-serif,system-ui,Arial" font-size="20" font-weight="700" fill="#0F172A">The machine drafts. You decide.</text>
+
+  <!-- AI drafts card -->
+  <g font-family="ui-sans-serif,system-ui,Arial">
+    <rect x="70" y="100" width="270" height="200" rx="14" fill="#F5F3FF" stroke="#DDD6FE"/>
+    <circle cx="120" cy="150" r="24" fill="#7C3AED"/>
+    <g fill="none" stroke="#FFFFFF" stroke-width="2.5">
+      <rect x="109" y="141" width="22" height="16" rx="3"/>
+      <path d="M120 141 v-6 M114 158 v5 M126 158 v5"/>
+      <circle cx="115" cy="149" r="1.6" fill="#FFFFFF" stroke="none"/>
+      <circle cx="125" cy="149" r="1.6" fill="#FFFFFF" stroke="none"/>
+    </g>
+    <text x="160" y="146" font-size="16" font-weight="700" fill="#5B21B6">AI drafts</text>
+    <text x="160" y="167" font-size="12.5" fill="#6D28D9">boilerplate &amp; first passes</text>
+    <g stroke="#C4B5FD" stroke-width="6" stroke-linecap="round">
+      <path d="M96 200 h210"/><path d="M96 224 h180"/><path d="M96 248 h150"/><path d="M96 272 h195"/>
+    </g>
+  </g>
+
+  <!-- arrow -->
+  <path d="M352 200 h96" fill="none" stroke="#94A3B8" stroke-width="3" marker-end="url(#a2)"/>
+  <text x="400" y="190" text-anchor="middle" font-family="ui-sans-serif,system-ui,Arial" font-size="12" fill="#64748B">review</text>
+
+  <!-- Developer decides card -->
+  <g font-family="ui-sans-serif,system-ui,Arial">
+    <rect x="460" y="100" width="270" height="200" rx="14" fill="#FFFFFF" stroke="#A7F3D0"/>
+    <circle cx="510" cy="150" r="24" fill="#059669"/>
+    <path d="M499 150 l8 8 l14 -16" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="550" y="146" font-size="16" font-weight="700" fill="#065F46">You decide</text>
+    <text x="550" y="167" font-size="12.5" fill="#047857">test, verify, take ownership</text>
+    <g font-size="13" fill="#334155">
+      <circle cx="500" cy="202" r="4" fill="#10B981"/><text x="514" y="207">Understand the problem</text>
+      <circle cx="500" cy="230" r="4" fill="#10B981"/><text x="514" y="235">Catch subtle bugs</text>
+      <circle cx="500" cy="258" r="4" fill="#10B981"/><text x="514" y="263">Own what ships</text>
+    </g>
+  </g>
+
+  <defs>
+    <marker id="a2" markerWidth="12" markerHeight="12" refX="7" refY="6" orient="auto"><path d="M0 0 L10 6 L0 12 z" fill="#94A3B8"/></marker>
+  </defs>
+</svg>
