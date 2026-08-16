@@ -20,7 +20,7 @@
     "clsx": "^2.1.1",
     "feed": "^4.2.2",
     "focus-visible": "^5.2.1",
-    "next": "^15.0.3",
+    "next": "^15.5.23",
     "next-mdx-remote": "^6.0.0",
     "postcss-focus-visible": "^6.0.4",
     "react": "^18.3.1",
@@ -33,7 +33,7 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "eslint": "^8.57.1",
-    "eslint-config-next": "^15.0.3",
+    "eslint-config-next": "^15.5.23",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.9",
     "typescript": "^5.6.3"
