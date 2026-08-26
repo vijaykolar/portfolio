@@ -52,8 +52,30 @@ content collection**. There is also an **automated poster** that publishes a new
   to `master`** and pushes (Vercel auto-deploys).
 - **Safeguard:** it does nothing unless `frontend/src/content/articles/` and
   `frontend/src/lib/keystaticReader.ts` exist on master (both now merged, so it will post).
-- Manage via the claude-code-remote trigger tools (`update_trigger` / `delete_trigger` /
-  `fire_trigger`) or the claude.ai Routines UI.
+- Manage via the `RemoteTrigger` tool (`get` / `update` / `run` / `list_runs` / `get_run_log`)
+  or the claude.ai Routines UI.
+
+### The environment must list this repo as a source (past outage)
+
+From 2026-07-23 to 2026-08-26 the routine published **nothing** while reporting `SUCCEEDED`
+on every run. Each run wrote the article, passed `next build`, committed locally, then failed
+`git push` with:
+
+```
+remote: access denied by the git proxy: vijaykolar/portfolio is not in this
+session's authorized repository set, so the proxy will not inject a credential for it.
+```
+
+The environment (`env_01JgECYCnnz9mkVX2EVGpfzs`) logged `env[info]: No sources configured`.
+~14 finished articles were written into ephemeral containers and discarded.
+
+- **Fix:** claude.ai → Settings → Environments → `env_01JgECYCnnz9mkVX2EVGpfzs` → add
+  `vijaykolar/portfolio` as a source **with write access**. Not settable via the trigger API.
+- The prompt now **preflights `git push --dry-run` before writing anything** and is required to
+  end the run in explicit failure (`exit 1` + a `RUN FAILED:` first line + a push notification)
+  if the push is not possible. A run that lands no commit on origin/master is a failed run.
+- To check health: `RemoteTrigger list_runs` then `get_run_log` on the newest session — look for
+  a successful `git push`, not just the run status.
 
 ## Newsletter (subscribe + notify)
 
