@@ -43,39 +43,45 @@ content collection**. There is also an **automated poster** that publishes a new
   no setup). Or edit `frontend/src/content/articles/*.mdx` directly.
 - **From the deployed site:** requires GitHub storage mode (see env vars below).
 
-## Automated poster (Routine)
+## Automated poster (GitHub Actions)
 
-- Trigger id: `trig_01HEBJGBSp1CBUs5qXsswYVZ` ("Auto blog post (every 3 days)").
-- Cron: `0 9 */3 * *` (UTC). Fresh session per fire. Push notifications on.
-- Behavior: pulls latest `master`, picks an un-covered software-engineering topic, writes a new
-  `frontend/src/content/articles/<slug>.mdx`, runs `next build` to validate, then **commits directly
-  to `master`** and pushes (Vercel auto-deploys).
-- **Safeguard:** it does nothing unless `frontend/src/content/articles/` and
-  `frontend/src/lib/keystaticReader.ts` exist on master (both now merged, so it will post).
-- Manage via the `RemoteTrigger` tool (`get` / `update` / `run` / `list_runs` / `get_run_log`)
-  or the claude.ai Routines UI.
+`.github/workflows/auto-blog-post.yml` publishes one new article every 3 days.
 
-### The environment must list this repo as a source (past outage)
+- Cron `0 9 */3 * *` (09:00 UTC), plus `workflow_dispatch` so you can trigger a run by hand
+  from the Actions tab.
+- Requires one repo secret: **`ANTHROPIC_API_KEY`** (Settings -> Secrets and variables ->
+  Actions). Optionally set a `NEXT_PUBLIC_SITE_URL` repo *variable*; the build falls back to
+  `https://example.com` if absent (it only affects RSS/canonical URLs at build time).
+- Claude only **authors** the `.mdx` file. The build gate, the commit and the push are plain
+  workflow steps, so a bad run fails loudly in the Actions tab and publishes nothing.
+- Guards between authoring and committing: exactly one new untracked article must exist, no
+  tracked file may be modified, the title must parse out of the frontmatter, and `next build`
+  is re-run independently of whatever Claude claimed.
+- Pushes with the workflow's built-in `GITHUB_TOKEN` (`permissions: contents: write`), so there
+  is no PAT or credential to configure. Vercel auto-deploys from `master`.
+- Note: GitHub disables scheduled workflows in repos with no activity for 60 days. Its own
+  commits count as activity, so this only matters if it is failing anyway.
 
-From 2026-07-23 to 2026-08-26 the routine published **nothing** while reporting `SUCCEEDED`
-on every run. Each run wrote the article, passed `next build`, committed locally, then failed
-`git push` with:
+### Why not the old claude.ai Routine
+
+Superseded 2026-08-26. `trig_01HEBJGBSp1CBUs5qXsswYVZ` is now **disabled** (kept for reference).
+
+From 2026-07-23 to 2026-08-26 it published **nothing** while reporting `SUCCEEDED` on every run.
+Each run wrote the article, passed `next build`, committed locally, then failed `git push` with:
 
 ```
 remote: access denied by the git proxy: vijaykolar/portfolio is not in this
 session's authorized repository set, so the proxy will not inject a credential for it.
 ```
 
-The environment (`env_01JgECYCnnz9mkVX2EVGpfzs`) logged `env[info]: No sources configured`.
-~14 finished articles were written into ephemeral containers and discarded.
+Its environment (`env_01JgECYCnnz9mkVX2EVGpfzs`) logged `env[info]: No sources configured`, and
+~14 finished articles were written into ephemeral containers and discarded. The fix would have
+been to add `vijaykolar/portfolio` as a write-access source on that environment via
+claude.ai -> Settings -> Environments; that is not settable through the trigger API, which is
+why the automation moved to GitHub Actions instead.
 
-- **Fix:** claude.ai → Settings → Environments → `env_01JgECYCnnz9mkVX2EVGpfzs` → add
-  `vijaykolar/portfolio` as a source **with write access**. Not settable via the trigger API.
-- The prompt now **preflights `git push --dry-run` before writing anything** and is required to
-  end the run in explicit failure (`exit 1` + a `RUN FAILED:` first line + a push notification)
-  if the push is not possible. A run that lands no commit on origin/master is a failed run.
-- To check health: `RemoteTrigger list_runs` then `get_run_log` on the newest session — look for
-  a successful `git push`, not just the run status.
+Lesson worth keeping: **a green run status is not proof of publication.** Verify the commit
+landed on `origin/master`, not just that the job reported success.
 
 ## Newsletter (subscribe + notify)
 
@@ -94,8 +100,11 @@ list via a SendGrid **Single Send**. All code is Next.js API routes (no separate
   content FS at runtime, which isn't reliable in serverless).
 - Homepage `Newsletter` form (`frontend/src/pages/index.tsx`) now POSTs to `/api/subscribe`
   then redirects to `/thank-you` (was a no-op `action="/thank-you"` that saved nothing).
-- The **auto-poster** calls `/api/notify` after publishing (step 8 of its prompt), gated on
-  `NEXT_PUBLIC_SITE_URL` + `NEWSLETTER_NOTIFY_SECRET` being set in the CCR environment.
+- The **auto-poster does NOT email subscribers.** The old Routine had a notify step; the
+  GitHub Actions workflow that replaced it does not, because the SendGrid vars were never
+  configured. To wire it up, add a final step to `.github/workflows/auto-blog-post.yml` that
+  waits for the Vercel deploy and POSTs to `/api/notify`, with `NEXT_PUBLIC_SITE_URL` and
+  `NEWSLETTER_NOTIFY_SECRET` as repo secrets.
 - To send a newsletter for a **manual** post:
   `curl -X POST "$SITE/api/notify" -H "Authorization: Bearer $NEWSLETTER_NOTIFY_SECRET" -H 'Content-Type: application/json' -d '{"slug":"<slug>"}'`
 
