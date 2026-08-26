@@ -1,0 +1,94 @@
+---
+title: "Database Indexing Explained: How to Speed Up Slow Queries"
+author: Vijay Kolar
+date: "2026-08-26"
+description: "A practical guide to how database indexes actually work, and how to use them to fix slow queries instead of guessing"
+---
+
+Almost every slow web application I have worked on had the same root cause, and it was almost never the front-end. It was a handful of database queries doing far more work than they needed to. The fix, more often than not, was a single well-chosen index.
+
+The problem is that indexing is one of those topics most developers pick up by osmosis. We know that adding an index makes things faster, so we add one to whatever column looks suspicious and hope for the best. Sometimes it works, sometimes nothing changes, and occasionally writes get slower and nobody notices for months.
+
+So in this article I want to explain what an index actually is, why the column order matters more than people expect, and how to tell whether an index is being used at all. Let's get started.
+
+## What an index actually is
+
+Imagine a table with a million user rows and this query:
+
+```sql
+SELECT * FROM users WHERE email = 'vijay@example.com';
+```
+
+Without an index, the database has no idea where that row lives. It reads every row and compares the email, one at a time. That is a **full table scan**, and its cost grows linearly with your data. It is perfectly fast on the two hundred rows you have in development, and painful on the million rows you have in production. This is exactly why slow queries tend to show up weeks after release.
+
+An index is a separate, sorted data structure that maps column values to row locations. Most relational databases use a B-tree, which keeps values in sorted order and lets the engine narrow the search by roughly half at every step. Finding one row out of a million takes about twenty comparisons instead of a million.
+
+```sql
+CREATE INDEX idx_users_email ON users (email);
+```
+
+The mental model I find useful is the index at the back of a textbook. You do not read the whole book to find every mention of "hydration". You jump to the index, find the term, and it tells you the page numbers. The index costs extra pages, and it has to be reprinted if the book changes, but it saves you from reading everything.
+
+## Indexes are not free
+
+That last part is the bit people forget. An index is a copy of your data that the database has to keep in sync. Every `INSERT`, `UPDATE`, and `DELETE` on an indexed column now has to update the index too. Indexes also consume disk and memory.
+
+This is why "just index everything" is bad advice. A table with twelve indexes has fast reads and genuinely slow writes. Index the columns you actually filter, join, and sort on, and nothing else.
+
+## Column order in composite indexes
+
+This is the part that trips up most developers, and it is where the biggest wins usually hide.
+
+A composite index covers multiple columns, and the order is significant:
+
+```sql
+CREATE INDEX idx_orders_user_created ON orders (user_id, created_at);
+```
+
+Because the index is sorted by `user_id` first and only then by `created_at`, it can serve:
+
+- `WHERE user_id = 42`
+- `WHERE user_id = 42 AND created_at > '2026-01-01'`
+- `WHERE user_id = 42 ORDER BY created_at DESC`
+
+But it cannot efficiently serve `WHERE created_at > '2026-01-01'` on its own. This is the **leftmost prefix rule**: you can use the index from the left, but you cannot skip a column and start in the middle. Going back to the textbook analogy, an index sorted by last name then first name is useless if all you know is the first name.
+
+The practical takeaway is to put your equality filters first and your range filters and sorts last. Getting that order right often turns a slow query fast without adding any new index at all.
+
+## Stop guessing and read the query plan
+
+The single most useful habit you can build is asking the database what it is doing, instead of assuming:
+
+```sql
+EXPLAIN ANALYZE
+SELECT * FROM orders WHERE user_id = 42 ORDER BY created_at DESC LIMIT 20;
+```
+
+`EXPLAIN` shows the plan the query planner chose. `ANALYZE` actually runs the query and reports real timings and row counts. What I look for:
+
+- **Seq Scan / Full Table Scan** on a large table. Usually the smoking gun.
+- **Index Scan** confirming the index you expect is genuinely being used.
+- A large gap between estimated and actual rows, which usually means the table statistics are stale.
+- **Sort** steps that a correctly ordered composite index could remove entirely.
+
+Read the plan before and after every index you add. If the plan did not change, the index is not helping, and you should drop it rather than leave it slowing down your writes.
+
+## Common reasons an index gets ignored
+
+You added the index, the query is still slow, and the plan still shows a sequential scan. Usually it is one of these:
+
+- **You wrapped the column in a function.** `WHERE LOWER(email) = '...'` cannot use a plain index on `email`. Index the expression instead, or normalise the data on the way in.
+- **Leading wildcard.** `LIKE '%vijay'` cannot use a B-tree, because the index is sorted from the left. `LIKE 'vijay%'` can.
+- **Type mismatch.** Comparing a `varchar` column to an integer forces a cast on every row.
+- **Low selectivity.** An index on a boolean column that is `true` for ninety percent of rows is not worth using, and the planner knows it.
+- **The table is small.** Below a few thousand rows a scan is genuinely cheaper. Do not fight the planner on this one.
+
+## Where to start
+
+If you have an app in production right now, do this in order. Turn on slow query logging and let it collect for a day, so you are optimising real traffic rather than the query you happen to be thinking about. Take the worst offender and run `EXPLAIN ANALYZE` on it. Add one index, measure again, and keep it only if the plan actually changed.
+
+One index at a time, always measured. That is the whole method, and it will get you further than any amount of guessing.
+
+That's all for this article. Hope you learned something new.
+
+Thank you for reading, and happy coding👨‍💻
