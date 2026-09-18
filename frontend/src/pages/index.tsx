@@ -17,7 +17,6 @@ import valtech from '@/images/logos/valtech.png'
 import lollypop from '@/images/logos/lollypo-logo.png'
 import harman from '@/images/logos/harman_International_logo.svg.png'
 import { formatDate } from '@/lib/formatDate'
-import { generateRssFeed } from '@/lib/generateRssFeed'
 import { getAllArticles } from '@/lib/getAllArticles'
 import type { StaticImageData } from 'next/image'
 
@@ -358,13 +357,11 @@ export default function Home({ articles }: InferGetStaticPropsType<typeof getSta
 export const getStaticProps: GetStaticProps<{
   articles: ArticleType[]
 }> = async () => {
-  if (process.env.NODE_ENV === 'production') {
-    await generateRssFeed()
-  }
-
   return {
     props: {
       articles: (await getAllArticles()).slice(0, 4),
     },
+    // Safety net; /api/revalidate refreshes this within seconds of a publish.
+    revalidate: 3600,
   }
 }

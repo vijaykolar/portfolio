@@ -75,5 +75,7 @@ export const getStaticProps: GetStaticProps<{
     props: {
       articles: await getAllArticles(),
     },
+    // Safety net; /api/revalidate refreshes this within seconds of a publish.
+    revalidate: 3600,
   }
 }

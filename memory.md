@@ -9,58 +9,106 @@ Repo:
   (A former standalone `backend/` Express server was removed — all server logic, including the
   newsletter, now lives in Next.js API routes under `frontend/src/pages/api/`.)
 
-The blog uses **Keystatic** (free, MIT, git-based CMS) with articles stored as a **frontmatter MDX
-content collection**. There is also an **automated poster** that publishes a new article every 3 days.
+The blog content lives in **Sanity** (free plan, project `ax0g47x9`, dataset `production`). The
+Sanity Studio is embedded in the app at `/studio`. Publishing a post in the Studio fires a webhook
+that revalidates the live site within seconds — **no commit, build or deploy is needed**. There is
+also an **automated poster** (GitHub Actions) that writes a new article into Sanity every 3 days.
+
+History: the blog was previously Keystatic (git-based, `.mdx` files under `src/content/articles/`),
+replaced by Sanity on 2026-09-18 so posting no longer depends on committing markdown files.
 
 ## Blog architecture
 
-- Content lives at `frontend/src/content/articles/<slug>.mdx` — **flat files** (Keystatic's format
-  when there are no entry-relative asset fields; images go to `public/` instead).
-- Each file is YAML frontmatter (`title`, `author`, `date`, `description`) + MDX body.
-- Article images: `frontend/public/images/articles/<slug>/...`, referenced by URL in the MDX.
-- Rendered via a dynamic route `frontend/src/pages/articles/[slug].tsx` using `next-mdx-remote`
-  (`serialize` in `getStaticProps` → `<MDXRemote>`), reusing `remark-gfm` + `@mapbox/rehype-prism`.
-- The Keystatic admin UI + API are mounted via a **hybrid App Router** segment under
-  `frontend/src/app/` (`/keystatic`, `/api/keystatic/*`) that coexists with the Pages Router site.
-  Note: it must live in `src/app/` (not root `app/`) because the project uses `src/pages/`.
+- **Content:** Sanity document type `post` with fields `title`, `slug`, `author`, `date`
+  (`YYYY-MM-DD`), `description`, `body`. Schema: `frontend/src/sanity/schema/post.ts`.
+- **Body format:** a **markdown text field** (`sanity-plugin-markdown`), NOT Portable Text. The site
+  compiles it with `next-mdx-remote` (`remark-gfm` + `@mapbox/rehype-prism`, `blockJS: false`), so
+  GFM plus the `<Image … />` JSX component render exactly as the old `.mdx` files did.
+- **Images:** still static files at `frontend/public/images/articles/<slug>/…`, referenced from the
+  body by absolute path (`/images/articles/<slug>/x.png`). Not stored in Sanity.
+- **Rendering:** `frontend/src/pages/articles/[slug].tsx` — `getStaticPaths` with
+  `fallback: 'blocking'` + `getStaticProps` with `revalidate: 3600`. Listing pages
+  (`src/pages/index.tsx`, `src/pages/articles/index.tsx`) also `revalidate: 3600`.
+- **Publish webhook:** `frontend/src/pages/api/revalidate.ts` verifies the Sanity signature
+  (`@sanity/webhook`) and calls `res.revalidate` for `/`, `/articles`, `/articles/<slug>`.
+- **Studio:** hybrid App Router segment `frontend/src/app/studio/[[...tool]]/page.tsx` mounting
+  `NextStudio` with `frontend/sanity.config.ts`. Must live in `src/app/` (project uses `src/pages/`).
+- **RSS:** served on demand by `src/pages/rss/feed.xml.tsx` and `feed.json.tsx`
+  (`getServerSideProps`, edge-cached 10 min) using `src/lib/rss.tsx`. No files under `public/rss`.
 
 ### Key files
-- `frontend/keystatic.config.ts` — collection schema + storage mode.
-- `frontend/src/lib/keystaticReader.ts` — `createReader(process.cwd(), config)` + helpers
-  (`getArticleMetas`, `getArticleBySlug`, `getArticleSlugs`).
+- `frontend/sanity.config.ts` — Studio config (`'use client'` at the top is required).
+- `frontend/src/sanity/client.ts` — read client (`useCdn: false`, `perspective: 'published'`).
+- `frontend/src/sanity/schema/post.ts` — the post schema.
+- `frontend/src/lib/articles.ts` — GROQ reader: `getArticleMetas`, `getArticleBySlug`, `getArticleSlugs`.
+  This is the single data seam; every page/feed/API route reads through it.
 - `frontend/src/lib/getAllArticles.ts` — thin wrapper over the reader (used by listing pages).
-- `frontend/src/pages/articles/[slug].tsx` — dynamic render route.
-- `frontend/src/pages/articles/index.tsx`, `frontend/src/pages/index.tsx` — listings.
-- `frontend/src/lib/generateRssFeed.tsx` — RSS built at production build; renders bodies with
-  `MDXRemote` + `renderToStaticMarkup`, using absolute (`NEXT_PUBLIC_SITE_URL`) image URLs.
-- `frontend/src/components/mdxComponents.tsx` — `Image` component for MDX bodies (next/image when
+- `frontend/src/pages/articles/[slug].tsx` — article page (ISR).
+- `frontend/src/pages/api/revalidate.ts` — Sanity webhook target.
+- `frontend/src/lib/rss.tsx` + `frontend/src/pages/rss/feed.{xml,json}.tsx` — feeds.
+- `frontend/src/components/mdxComponents.tsx` — `Image` component for bodies (next/image when
   width+height given, else a plain `<img>`).
-- `frontend/src/app/…` — Keystatic admin/API (hybrid App Router).
+- `frontend/scripts/lib/sanity.mjs` — shared client/slug helpers for the Node scripts.
+- `frontend/scripts/migrate-articles.mjs` — one-time `.mdx` → Sanity migration (delete after use).
+- `frontend/scripts/poster/*.mjs` — auto-poster scripts (`list-posts`, `validate-article`, `publish-article`).
 
 ## Adding / editing posts
 
-- **Locally:** `cd frontend && npm run dev` → open `http://localhost:3000/keystatic` (local storage,
-  no setup). Or edit `frontend/src/content/articles/*.mdx` directly.
-- **From the deployed site:** requires GitHub storage mode (see env vars below).
+- Open `https://<site>/studio` (or `http://localhost:3000/studio` in dev), log in with the Sanity
+  account, create a **Post**, click **Generate** next to Slug, write the body in markdown, **Publish**.
+  The page is live within seconds; check `/articles/<slug>`.
+- Images: commit the file under `frontend/public/images/articles/<slug>/` (that part still needs a
+  deploy) and reference it with
+  `<Image className="…" src="/images/articles/<slug>/pic.png" alt="…" width={705} height={400} />`.
+- Unpublishing removes the post from the listings and the URL 404s on the next request.
+- To email subscribers about a manual post, POST to `/api/notify` (see Newsletter).
+
+## One-time Sanity setup (status as of 2026-09-18)
+
+Done: project `ax0g47x9` created, dataset `production` is public (anonymous reads return 200).
+
+Still to do (all in https://www.sanity.io/manage → project → API):
+1. **CORS origins:** add `http://localhost:3000` and `https://<site-domain>` with **Allow
+   credentials** ON. Without this the Studio at `/studio` cannot log in.
+2. **Token:** create `github-actions-poster`, role **Editor** → `SANITY_API_WRITE_TOKEN`. Put it in
+   the GitHub repo secret of the same name, and temporarily in `frontend/.env.local` to run the
+   migration. **Never** on Vercel, never `NEXT_PUBLIC_`.
+3. **Migration:** `cd frontend && node --env-file=.env.local scripts/migrate-articles.mjs` (pushes the
+   6 old `.mdx` posts). Then delete `frontend/src/content/` and `frontend/scripts/migrate-articles.mjs`,
+   and remove the token line from `.env.local`.
+4. **Vercel env (all environments):** `NEXT_PUBLIC_SANITY_PROJECT_ID=ax0g47x9`,
+   `NEXT_PUBLIC_SANITY_DATASET=production`, `SANITY_REVALIDATE_SECRET` (`openssl rand -hex 32`).
+   Delete any `KEYSTATIC_*` / `NEXT_PUBLIC_KEYSTATIC_STORAGE` vars. Then deploy.
+5. **Webhook** (after the deploy): name `vercel-revalidate`, URL `https://<site>/api/revalidate`,
+   dataset `production`, trigger **create + update + delete**, filter `_type == "post"`, projection
+   `{_type, "slug": slug.current}`, HTTP POST, **Include drafts OFF**, secret = the
+   `SANITY_REVALIDATE_SECRET` value. The webhook's "Attempts" log is the place to debug publishing.
+6. **GitHub Actions:** secret `SANITY_API_WRITE_TOKEN`; variables `SANITY_PROJECT_ID=ax0g47x9`,
+   `SANITY_DATASET=production`, optionally `NEXT_PUBLIC_SITE_URL`.
 
 ## Automated poster (GitHub Actions)
 
-`.github/workflows/auto-blog-post.yml` publishes one new article every 3 days.
+`.github/workflows/auto-blog-post.yml` publishes one new article to Sanity every 3 days.
 
-- Cron `0 9 */3 * *` (09:00 UTC), plus `workflow_dispatch` so you can trigger a run by hand
-  from the Actions tab.
-- Requires one repo secret: **`ANTHROPIC_API_KEY`** (Settings -> Secrets and variables ->
-  Actions). Optionally set a `NEXT_PUBLIC_SITE_URL` repo *variable*; the build falls back to
-  `https://example.com` if absent (it only affects RSS/canonical URLs at build time).
-- Claude only **authors** the `.mdx` file. The build gate, the commit and the push are plain
-  workflow steps, so a bad run fails loudly in the Actions tab and publishes nothing.
-- Guards between authoring and committing: exactly one new untracked article must exist, no
-  tracked file may be modified, the title must parse out of the frontmatter, and `next build`
-  is re-run independently of whatever Claude claimed.
-- Pushes with the workflow's built-in `GITHUB_TOKEN` (`permissions: contents: write`), so there
-  is no PAT or credential to configure. Vercel auto-deploys from `master`.
-- Note: GitHub disables scheduled workflows in repos with no activity for 60 days. Its own
-  commits count as activity, so this only matters if it is failing anyway.
+- Cron `0 9 */3 * *` (09:00 UTC), plus `workflow_dispatch` with a `dry_run` checkbox (write and
+  validate only, no publish).
+- Flow: `scripts/poster/list-posts.mjs` dumps existing titles → `anthropics/claude-code-action`
+  (tools `Read,Write` only, no Bash) writes `article.md` at the repo root → a guard checks the
+  working tree contains nothing but `?? article.md` → `scripts/poster/validate-article.mjs`
+  (exact frontmatter keys, date format, 400–1500 words, headings, no images/JSX/imports, slug and
+  title not already in Sanity, and the body **compiles with the same MDX options as the page**) →
+  the article is uploaded as a run artifact → `scripts/poster/publish-article.mjs` creates the
+  document with `SANITY_API_WRITE_TOKEN`.
+- `permissions: contents: read`. The workflow never commits or pushes. Publishing fires the Sanity
+  webhook, which revalidates the site, so no build runs in CI.
+- `publish-article.mjs` uses `client.create` with a fixed `_id` (`post-<slug>`), so a re-run for the
+  same slug fails instead of publishing twice.
+- Verify a run by opening `/articles/<slug>` and the Sanity webhook attempts log — **a green run
+  status is not proof of publication** (lesson from the old cloud Routine, below).
+- GitHub disables scheduled workflows after 60 days with no repo activity. The poster no longer
+  commits, so push something or run it by hand at least every couple of months.
+- The poster does NOT email subscribers (SendGrid vars are not configured). To add it, append a step
+  that POSTs `{ "slug": "<slug>" }` to `/api/notify` with `NEWSLETTER_NOTIFY_SECRET`.
 
 ### Why not the old claude.ai Routine
 
@@ -75,13 +123,8 @@ session's authorized repository set, so the proxy will not inject a credential f
 ```
 
 Its environment (`env_01JgECYCnnz9mkVX2EVGpfzs`) logged `env[info]: No sources configured`, and
-~14 finished articles were written into ephemeral containers and discarded. The fix would have
-been to add `vijaykolar/portfolio` as a write-access source on that environment via
-claude.ai -> Settings -> Environments; that is not settable through the trigger API, which is
-why the automation moved to GitHub Actions instead.
-
-Lesson worth keeping: **a green run status is not proof of publication.** Verify the commit
-landed on `origin/master`, not just that the job reported success.
+~14 finished articles were written into ephemeral containers and discarded. Lesson worth keeping:
+**a green run status is not proof of publication.**
 
 ## Newsletter (subscribe + notify)
 
@@ -96,16 +139,10 @@ list via a SendGrid **Single Send**. All code is Next.js API routes (no separate
 - `frontend/src/pages/api/subscribe.ts` — POST `{ email }` → add to list (+ best-effort welcome email).
 - `frontend/src/pages/api/notify.ts` — POST `{ slug, title?, description? }`, protected by
   `Authorization: Bearer $NEWSLETTER_NOTIFY_SECRET`; sends the Single Send. If `title` is
-  omitted it's looked up from the published `/rss/feed.json` by slug (avoids reading the
-  content FS at runtime, which isn't reliable in serverless).
-- Homepage `Newsletter` form (`frontend/src/pages/index.tsx`) now POSTs to `/api/subscribe`
-  then redirects to `/thank-you` (was a no-op `action="/thank-you"` that saved nothing).
-- The **auto-poster does NOT email subscribers.** The old Routine had a notify step; the
-  GitHub Actions workflow that replaced it does not, because the SendGrid vars were never
-  configured. To wire it up, add a final step to `.github/workflows/auto-blog-post.yml` that
-  waits for the Vercel deploy and POSTs to `/api/notify`, with `NEXT_PUBLIC_SITE_URL` and
-  `NEWSLETTER_NOTIFY_SECRET` as repo secrets.
-- To send a newsletter for a **manual** post:
+  omitted it is looked up from Sanity by slug.
+- Homepage `Newsletter` form (`frontend/src/pages/index.tsx`) POSTs to `/api/subscribe`
+  then redirects to `/thank-you`.
+- To send a newsletter for a post:
   `curl -X POST "$SITE/api/notify" -H "Authorization: Bearer $NEWSLETTER_NOTIFY_SECRET" -H 'Content-Type: application/json' -d '{"slug":"<slug>"}'`
 
 ## SendGrid setup (one-time)
@@ -155,11 +192,10 @@ curl -s https://api.sendgrid.com/v3/asm/groups \
 ```
 
 **5. Notify secret** → `NEWSLETTER_NOTIFY_SECRET`
-Generate any random string (`openssl rand -hex 32`). Set the SAME value in Vercel and in the
-CCR automation environment so the auto-poster can authenticate to `/api/notify`.
+Generate any random string (`openssl rand -hex 32`). Set it in Vercel (and wherever the
+caller of `/api/notify` runs).
 
-**6. Also set** `NEXT_PUBLIC_SITE_URL` (deployed base URL, no trailing slash) in both Vercel
-and the CCR environment.
+**6. Also set** `NEXT_PUBLIC_SITE_URL` (deployed base URL, no trailing slash) in Vercel.
 
 **Verify end to end** (after deploying with the vars set):
 - Subscribe: `curl -X POST "$SITE/api/subscribe" -H 'Content-Type: application/json' -d '{"email":"you@example.com"}'` → `{"ok":true}`, and the contact appears in the list.
@@ -168,39 +204,55 @@ and the CCR environment.
 ## Environment variables
 
 - `NEXT_PUBLIC_SITE_URL` — site base URL (RSS/canonical). Pre-existing.
-- **Keystatic storage** defaults to **local** (builds with no secrets). To enable editing/publishing
-  from the deployed `/keystatic`, set ALL of these in Vercel (and `.env.local` for local testing):
-  - `NEXT_PUBLIC_KEYSTATIC_STORAGE=github`
-  - `KEYSTATIC_GITHUB_CLIENT_ID`, `KEYSTATIC_GITHUB_CLIENT_SECRET` (from a GitHub App installed on the repo)
-  - `KEYSTATIC_SECRET` (`openssl rand -hex 32`)
-  - GitHub App: callback `https://<domain>/api/keystatic/github/oauth/callback`, permissions
-    Contents R/W + Metadata RO. Steps in `frontend/.env.example`.
-- **Status:** the GitHub App is NOT yet set up (pending user action) — live `/keystatic` is read-only
-  until it is; local editing works without it.
+- **Sanity (required for every build):** `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET`.
+  The build queries Sanity in `getStaticPaths`/`getStaticProps`; without them `src/sanity/client.ts`
+  throws at import time with a clear message.
+- **Sanity webhook:** `SANITY_REVALIDATE_SECRET` (Vercel + the webhook config).
+- **Sanity write:** `SANITY_API_WRITE_TOKEN` — GitHub Actions secret + one-time local migration only.
+- **GitHub Actions variables:** `SANITY_PROJECT_ID`, `SANITY_DATASET` (the scripts also accept the
+  `NEXT_PUBLIC_` names, so `.env.local` works for running them locally).
 - **Newsletter (SendGrid)** — set on Vercel: `SENDGRID_API_KEY` (Mail Send + Marketing perms),
-  `SENDGRID_LIST_ID`, `SENDGRID_FROM_EMAIL` (verified sender, welcome email), `SENDGRID_SENDER_ID`
-  (numeric verified sender identity), `SENDGRID_UNSUBSCRIBE_GROUP_ID` (numeric suppression group),
-  `NEWSLETTER_NOTIFY_SECRET` (protects /api/notify). For auto-notify, also set
-  `NEXT_PUBLIC_SITE_URL` + `NEWSLETTER_NOTIFY_SECRET` in the CCR environment. See `frontend/.env.example`.
-  **Status:** SendGrid vars NOT yet set (pending user action) — signup/notify return errors until configured.
+  `SENDGRID_LIST_ID`, `SENDGRID_FROM_EMAIL`, `SENDGRID_SENDER_ID`, `SENDGRID_UNSUBSCRIBE_GROUP_ID`,
+  `NEWSLETTER_NOTIFY_SECRET`. **Status:** NOT yet set — signup/notify return errors until configured.
+- Removed 2026-09-18: `NEXT_PUBLIC_KEYSTATIC_STORAGE`, `KEYSTATIC_GITHUB_CLIENT_ID`,
+  `KEYSTATIC_GITHUB_CLIENT_SECRET`, `KEYSTATIC_SECRET`. Delete them from Vercel if present.
 
 ## Gotchas / decisions (learned the hard way)
 
-- **Flat files, not `<slug>/index.mdx`.** With no entry-relative asset fields Keystatic stores each
-  entry as `<slug>.mdx`; a directory layout makes the reader return nothing.
-- **Reader base = `process.cwd()`** (the `frontend/` app root) for both storage modes. `pathPrefix`
-  only affects GitHub *commit* paths, not the local filesystem reader — do NOT add `../`.
+- **Version pins.** `sanity@^4.22`, `next-sanity@^11.6`, `sanity-plugin-markdown@^7`,
+  `@sanity/client@^7`, `styled-components@^6`, `easymde@^2`. The next majors of all three Sanity
+  packages require **React 19 + Next 16**; upgrade those first, then Sanity.
+- **`npm install` of the Sanity packages exits 1 with no output on this Windows machine** when
+  lifecycle scripts run inside the agent sandbox (esbuild/sharp postinstall). Workaround that worked:
+  `npm install … --ignore-scripts` followed by `npm rebuild`. Plain terminals are unaffected.
+- **`'use client'` must be the first line of `sanity.config.ts`.** The config holds functions and the
+  Studio page is a server component; the directive turns the import into a client reference.
+- **`/api/revalidate` is a Pages Router route** because `res.revalidate()` only exists there, and it
+  verifies the signature with `@sanity/webhook` because `parseBody` from `next-sanity/webhook` only
+  accepts App Router `NextRequest`. `bodyParser` is disabled so the HMAC is computed over the raw body.
+- **CORS with credentials** must include the site origin (and localhost) or Studio login fails.
+- **Webhook "Include drafts" must be OFF** so revalidation only fires on publish, and the projection
+  must include `slug.current` (on delete, Sanity projects the pre-delete document so the slug is present).
+- **`useCdn: false`** on the read client — the API CDN can lag a publish by seconds, which would make
+  the webhook regenerate a stale page.
+- **`fallback: 'blocking'` + `revalidate`** on the article page; a `notFound` result carries
+  `revalidate: 60` so a 404 cached just before a publish expires quickly.
+- **A bad body throws, on purpose.** `[slug].tsx` rethrows MDX compile errors instead of returning
+  `notFound`, so ISR keeps serving the last good page and the failure shows as a 500 in the Sanity
+  webhook attempts log. Studio-authored bodies are NOT compile-checked in the editor: a bare `<` or
+  `{` outside code breaks the page. The auto-poster's validator does compile-check.
 - **`blockJS: false`** on `serialize` — next-mdx-remote v6 strips ALL JSX expression attributes
-  (`width={705}`, `style={{…}}`) by default. Content is authored in this repo, so it's safe to allow
-  them; `blockDangerousJS` stays on.
-- **Storage gating uses a NEXT_PUBLIC flag**, not `NODE_ENV` — the flag must be readable on both the
-  client admin UI and the server API so they agree on the mode; gating on server-only secrets desyncs
-  them, and gating on `NODE_ENV` made production builds fail without the secrets.
-- Two lockfiles (root stub + `frontend/`) trigger a benign Next "workspace root" warning; harmless
-  because the reader uses `process.cwd()`.
+  (`width={705}`, `style={{…}}`) by default. Content is authored by the site owner, so it's safe to
+  allow them; `blockDangerousJS` stays on.
+- **RSS is SSR with `s-maxage=600`**, so feeds can lag a publish by up to 10 minutes. Never add
+  files under `public/rss/` again — a public file and a page at the same path is a Next build error.
+- Two lockfiles (root stub + `frontend/`) trigger a benign Next "workspace root" warning; harmless.
 
 ## History
 - PR #7 — Keystatic CMS + content migration (merged).
 - PR #8 — default to local storage so builds never require secrets (merged).
 - PR #9 — add memory.md (merged).
-- Newsletter — subscribe/notify API routes + SendGrid storage + poster notify step.
+- Newsletter — subscribe/notify API routes + SendGrid storage.
+- 2026-08-26 — auto-poster moved from the claude.ai Routine to GitHub Actions.
+- 2026-09-18 — Keystatic + `.mdx` files replaced by Sanity (embedded Studio at `/studio`, publish
+  webhook → ISR, dynamic RSS, auto-poster publishes via the Sanity API).

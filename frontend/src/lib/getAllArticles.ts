@@ -1,5 +1,5 @@
-import { getArticleMetas } from './keystaticReader'
-import type { ArticleMeta, ArticleWithSlug } from './keystaticReader'
+import { getArticleMetas } from './articles'
+import type { ArticleMeta, ArticleWithSlug } from './articles'
 
 export type { ArticleMeta, ArticleWithSlug }
 

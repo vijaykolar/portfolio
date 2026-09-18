@@ -10,7 +10,7 @@ import rehypePrism from '@mapbox/rehype-prism'
 
 import { ArticleLayout } from '@/components/ArticleLayout'
 import { mdxComponents } from '@/components/mdxComponents'
-import { getArticleBySlug, getArticleSlugs } from '@/lib/keystaticReader'
+import { getArticleBySlug, getArticleSlugs } from '@/lib/articles'
 
 type MDXSource = Awaited<ReturnType<typeof serialize>>
 
@@ -38,7 +38,9 @@ export const getStaticPaths: GetStaticPaths = async () => {
   const slugs = await getArticleSlugs()
   return {
     paths: slugs.map((slug) => ({ params: { slug } })),
-    fallback: false,
+    // Posts published in Sanity after the last deploy are generated on first
+    // request (and pre-warmed by /api/revalidate when the webhook fires).
+    fallback: 'blocking',
   }
 }
 
@@ -48,19 +50,30 @@ export const getStaticProps: GetStaticProps<
   const slug = params?.slug as string
   const article = await getArticleBySlug(slug)
   if (!article) {
-    return { notFound: true }
+    // Short TTL so a 404 cached just before a publish expires quickly even if
+    // the webhook misses.
+    return { notFound: true, revalidate: 60 }
   }
 
-  const mdxSource = await serialize(article.body, {
-    // Content is authored in this repo (via Keystatic / the scheduled poster),
-    // so allow JSX expressions like `width={705}` and `style={{…}}` that
-    // next-mdx-remote strips by default. `blockDangerousJS` stays on.
-    blockJS: false,
-    mdxOptions: {
-      remarkPlugins: [remarkGfm],
-      rehypePlugins: [rehypePrism],
-    },
-  })
+  let mdxSource: MDXSource
+  try {
+    mdxSource = await serialize(article.body, {
+      // Content is authored by the site owner (Studio / the scheduled poster),
+      // so allow JSX expressions like `width={705}` and `style={{…}}` that
+      // next-mdx-remote strips by default. `blockDangerousJS` stays on.
+      blockJS: false,
+      mdxOptions: {
+        remarkPlugins: [remarkGfm],
+        rehypePlugins: [rehypePrism],
+      },
+    })
+  } catch (error) {
+    // Rethrow rather than returning notFound: a throw during ISR regeneration
+    // keeps serving the last good page and surfaces as a 500 in the Sanity
+    // webhook attempt log, whereas notFound would replace a good page with 404.
+    const message = error instanceof Error ? error.message : String(error)
+    throw new Error(`MDX compile failed for article "${slug}": ${message}`)
+  }
 
   return {
     props: {
@@ -71,5 +84,7 @@ export const getStaticProps: GetStaticProps<
       },
       mdxSource,
     },
+    // Safety net; the webhook normally revalidates within seconds of a publish.
+    revalidate: 3600,
   }
 }

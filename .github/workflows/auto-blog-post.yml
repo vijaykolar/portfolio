@@ -1,0 +1,126 @@
+name: Auto blog post
+
+# Publishes one new article to Sanity every 3 days.
+#
+# Claude only authors a markdown file. Validation (frontmatter, length, MDX
+# compile, uniqueness) and the publish call are plain workflow steps, so a bad
+# run fails loudly and publishes nothing. Publishing fires the Sanity webhook,
+# which revalidates the live site — no git commit, build or deploy is involved.
+#
+# Repo secrets: ANTHROPIC_API_KEY, SANITY_API_WRITE_TOKEN
+# Repo variables: SANITY_PROJECT_ID, SANITY_DATASET (default "production"),
+#                 NEXT_PUBLIC_SITE_URL (optional, only for the log line)
+#
+# Note: GitHub disables scheduled workflows after 60 days with no repo
+# activity. This workflow no longer commits, so push something or run it by
+# hand at least every couple of months.
+
+on:
+  schedule:
+    - cron: '0 9 */3 * *' # 09:00 UTC every 3rd day
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Write and validate the article but do not publish it'
+        type: boolean
+        default: false
+
+concurrency:
+  group: auto-blog-post
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      SANITY_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
+      SANITY_DATASET: ${{ vars.SANITY_DATASET || 'production' }}
+      NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund
+
+      - name: Gather context
+        id: ctx
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          node scripts/poster/list-posts.mjs > "$RUNNER_TEMP/existing-posts.txt"
+          echo "posts_file=$RUNNER_TEMP/existing-posts.txt" >> "$GITHUB_OUTPUT"
+          echo "today=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Write the article
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: |
+            --max-turns 15
+            --allowedTools Read,Write
+          prompt: |
+            You are the automated poster for a software-engineering blog. Write exactly ONE new,
+            original article. Work autonomously. Today's date is ${{ steps.ctx.outputs.today }}.
+
+            1. Read `${{ steps.ctx.outputs.posts_file }}` — it lists the title of every existing
+               post. Do NOT duplicate or closely overlap an existing topic.
+
+            2. Pick a fresh, broadly useful software-engineering topic — front-end, backend,
+               tooling, testing, databases, system design, performance, security, career, or
+               best practices. Favour whichever area the existing posts cover least.
+
+            3. Write exactly one file: `${{ github.workspace }}/article.md`. It must start with
+               frontmatter containing exactly these four keys, values double-quoted:
+
+               ---
+               title: "<Article Title>"
+               author: "Vijay Kolar"
+               date: "${{ steps.ctx.outputs.today }}"
+               description: "<one or two sentence summary>"
+               ---
+
+               Body: 600-1000 words of GitHub-flavoured markdown — `##` headings, prose, lists,
+               and fenced code blocks with a language tag. Practical, first-person, lightly
+               opinionated voice. Text and code only: no images, no HTML, no JSX, no import or
+               export lines. The body is compiled as MDX, so never write a bare `<` or `{`
+               outside of code spans and code blocks.
+
+            RULES: create only that one file. Do not read, create or modify anything else in the
+            repository. Do not run any commands.
+
+      - name: Guard the working tree
+        run: |
+          set -euo pipefail
+          STATUS=$(git status --porcelain)
+          if [ "$STATUS" != "?? article.md" ]; then
+            echo "::error::Expected only a new article.md; working tree has:"
+            echo "$STATUS"
+            exit 1
+          fi
+
+      - name: Validate the article
+        id: validate
+        working-directory: frontend
+        run: node scripts/poster/validate-article.mjs "$GITHUB_WORKSPACE/article.md"
+
+      - name: Keep a copy of the article
+        uses: actions/upload-artifact@v4
+        with:
+          name: article-${{ steps.validate.outputs.slug }}
+          path: article.md
+
+      - name: Publish to Sanity
+        if: ${{ !inputs.dry_run }}
+        working-directory: frontend
+        env:
+          SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+        run: node scripts/poster/publish-article.mjs "$GITHUB_WORKSPACE/article.md"

@@ -1,39 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
+import { getArticleBySlug } from '@/lib/articles'
 import { sendNewsletter } from '@/lib/sendgrid'
-
-interface FeedItem {
-  title?: string
-  summary?: string
-  url?: string
-}
-
-// Look up a post's title/description from the published JSON feed by slug.
-// Avoids reading the content filesystem at runtime (not reliable in serverless).
-async function postFromFeed(
-  siteUrl: string,
-  slug: string,
-): Promise<{ title: string; description: string } | null> {
-  try {
-    const res = await fetch(`${siteUrl}/rss/feed.json`)
-    if (!res.ok) return null
-    const feed = (await res.json()) as { items?: FeedItem[] }
-    const match = (feed.items ?? []).find((item) =>
-      (item.url ?? '').replace(/\/$/, '').endsWith(`/articles/${slug}`),
-    )
-    if (!match) return null
-    return { title: match.title ?? slug, description: match.summary ?? '' }
-  } catch {
-    return null
-  }
-}
 
 /**
  * Emails the subscriber list about a newly published post.
  *
  * Auth: `Authorization: Bearer <NEWSLETTER_NOTIFY_SECRET>`.
  * Body: `{ slug, title?, description? }`. If title is omitted it is looked up
- * from the published feed by slug.
+ * from Sanity by slug.
  */
 export default async function handler(
   req: NextApiRequest,
@@ -63,15 +38,15 @@ export default async function handler(
   let title = req.body?.title ? String(req.body.title) : ''
   let description = req.body?.description ? String(req.body.description) : ''
   if (!title) {
-    const fromFeed = await postFromFeed(siteUrl, slug)
-    if (!fromFeed) {
+    const article = await getArticleBySlug(slug)
+    if (!article) {
       return res.status(404).json({
         error:
-          'Could not resolve the post. Pass `title` (and `description`) in the body, or ensure the slug exists in the published feed.',
+          'Could not resolve the post. Pass `title` (and `description`) in the body, or ensure the slug exists as a published post.',
       })
     }
-    title = fromFeed.title
-    description = description || fromFeed.description
+    title = article.meta.title
+    description = description || article.meta.description
   }
 
   try {

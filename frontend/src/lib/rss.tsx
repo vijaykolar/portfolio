@@ -1,16 +1,18 @@
 import ReactDOMServer from 'react-dom/server'
 import { Feed } from 'feed'
-import { mkdir, writeFile } from 'fs/promises'
 import { serialize } from 'next-mdx-remote/serialize'
 import { MDXRemote } from 'next-mdx-remote'
 import remarkGfm from 'remark-gfm'
 import rehypePrism from '@mapbox/rehype-prism'
 
-import { getArticleBySlug, getArticleMetas } from './keystaticReader'
+import { getArticleBySlug, getArticleMetas } from './articles'
 
-export async function generateRssFeed(): Promise<void> {
+// Builds the RSS / JSON feed from the current Sanity content. Served on demand
+// by src/pages/rss/feed.xml.tsx and feed.json.tsx (content is no longer known
+// at build time, so the feeds cannot be static files under public/).
+export async function buildFeed(): Promise<Feed> {
   const articles = await getArticleMetas()
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? ''
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? '').replace(/\/$/, '')
   const author = {
     name: 'Vijay Kolar',
     email: 'vijayikolar@gmail.com',
@@ -20,7 +22,7 @@ export async function generateRssFeed(): Promise<void> {
     title: author.name,
     description: 'Your blog description',
     author,
-    id: siteUrl!,
+    id: siteUrl,
     link: siteUrl,
     image: `${siteUrl}/favicon.ico`,
     favicon: `${siteUrl}/favicon.ico`,
@@ -48,16 +50,22 @@ export async function generateRssFeed(): Promise<void> {
     const full = await getArticleBySlug(article.slug)
     let html = ''
     if (full) {
-      const mdxSource = await serialize(full.body, {
-        blockJS: false,
-        mdxOptions: {
-          remarkPlugins: [remarkGfm],
-          rehypePlugins: [rehypePrism],
-        },
-      })
-      html = ReactDOMServer.renderToStaticMarkup(
-        <MDXRemote {...mdxSource} components={rssComponents} />,
-      )
+      try {
+        const mdxSource = await serialize(full.body, {
+          blockJS: false,
+          mdxOptions: {
+            remarkPlugins: [remarkGfm],
+            rehypePlugins: [rehypePrism],
+          },
+        })
+        html = ReactDOMServer.renderToStaticMarkup(
+          <MDXRemote {...mdxSource} components={rssComponents} />,
+        )
+      } catch (error) {
+        // One broken body must not take the whole feed down; the article page
+        // itself will surface the error.
+        console.error(`rss: failed to render "${article.slug}"`, error)
+      }
     }
 
     feed.addItem({
@@ -72,9 +80,5 @@ export async function generateRssFeed(): Promise<void> {
     })
   }
 
-  await mkdir('./public/rss', { recursive: true })
-  await Promise.all([
-    writeFile('./public/rss/feed.xml', feed.rss2(), 'utf8'),
-    writeFile('./public/rss/feed.json', feed.json1(), 'utf8'),
-  ])
+  return feed
 }
