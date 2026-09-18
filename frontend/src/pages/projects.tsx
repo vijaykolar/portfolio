@@ -70,7 +70,7 @@ const openSourceProjects: Project[] = [
     description:
       'A project management tool built with Next.js and Tailwind CSS.',
     link: {
-      href: 'https://project-management-app-theta-sand.vercel.app/',
+      href: 'https://frontend-beryl-mu-94.vercel.app/',
       label: 'project-management.app',
     },
     logo: githubLogo,
